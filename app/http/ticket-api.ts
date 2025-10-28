@@ -45,4 +45,12 @@ export const ticketApi = {
   updateTicketStatus: async (id: string, status: TicketStatus): Promise<ApiResponse<unknown>> => {
     return httpClient.patch(`/tickets/${id}/status`, { status });
   },
+
+  completeTicket: async (id: string): Promise<ApiResponse<Ticket>> => {
+    return httpClient.patch(`/tickets/${id}/complete`);
+  },
+
+  cancelTicket: async (id: string): Promise<ApiResponse<Ticket>> => {
+    return httpClient.patch(`/tickets/${id}/cancel`);
+  },
 };

@@ -1,21 +1,19 @@
 export enum TicketType {
   IMMEDIATE_ATTENTION = "immediate_attention",
-  AMBULANCE = "ambulance",
   TELEMEDICINE = "telemedicine",
   HOME_CARE = "home_care",
+  MEDICAL_CONSULTATION = "medical_consultation",
   LABORATORY = "laboratory",
-  APPOINTMENT = "appointment",
-  IMMEDIATE_CARE = "immediate_care",
+  AMBULANCE = "ambulance",
 }
 
 export const TicketTypeLabels = {
   [TicketType.IMMEDIATE_ATTENTION]: "Atención Inmediata",
-  [TicketType.AMBULANCE]: "Ambulancia",
   [TicketType.TELEMEDICINE]: "Telemedicina",
-  [TicketType.HOME_CARE]: "Cuidado en Casa",
+  [TicketType.HOME_CARE]: "Atención domiciliaria",
+  [TicketType.MEDICAL_CONSULTATION]: "Consulta médica",
   [TicketType.LABORATORY]: "Laboratorio",
-  [TicketType.APPOINTMENT]: "Cita",
-  [TicketType.IMMEDIATE_CARE]: "Atención Inmediata",
+  [TicketType.AMBULANCE]: "Ambulancia",
 };
 
 export enum TicketStatus {

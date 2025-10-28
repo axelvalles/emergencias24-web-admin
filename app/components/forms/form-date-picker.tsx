@@ -1,5 +1,3 @@
-;
-
 import type { FieldPath, FieldValues } from "react-hook-form";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -19,17 +17,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import type { BaseFormFieldProps, DatePickerConfig } from "@/types/base-form";
+import { es } from "react-day-picker/locale";
 
 interface FormDatePickerProps<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > extends BaseFormFieldProps<TFieldValues, TName> {
   config?: DatePickerConfig;
 }
 
 function FormDatePicker<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   control,
   name,
@@ -44,7 +43,7 @@ function FormDatePicker<
     minDate,
     maxDate,
     disabledDates = [],
-    placeholder = "Pick a date",
+    placeholder = "Selecciona una fecha",
   } = config;
 
   return (
@@ -70,7 +69,7 @@ function FormDatePicker<
                   disabled={disabled}
                 >
                   {field.value ? (
-                    format(field.value, "PPP")
+                    format(field.value, "PPP", { locale: es })
                   ) : (
                     <span>{placeholder}</span>
                   )}
@@ -81,6 +80,8 @@ function FormDatePicker<
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
+                captionLayout="dropdown"
+                locale={es}
                 selected={field.value}
                 onSelect={field.onChange}
                 disabled={(date) => {

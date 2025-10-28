@@ -6,22 +6,25 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { IconCheck, IconArrowLeft } from "@tabler/icons-react";
+import { IconArrowLeft } from "@tabler/icons-react";
 import { useNavigate } from "react-router";
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { getErrorMessage } from "~/http/api-server";
 import {
   TicketStatus,
   TicketTypeLabels,
   TicketStatusLabels,
   TicketPriorityLabels,
 } from "~/types/tickets";
-import { AlertModal } from "~/components/modal/alert-modal";
 import { LocationDisplay } from "~/components/map/location-display";
+import PatientInfoCard from "~/features/tickets/patient-info-card";
+import ButtonComplete from "~/features/tickets/button-complete";
+import ButtonCancel from "~/features/tickets/button-cancel";
 
 // Helper function to check if location is valid coordinates
 function isValidCoordinates(location: string): boolean {
+  if (!location) {
+    return false;
+  }
+
   const coordRegex = /^(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)$/;
   const match = location.match(coordRegex);
 
@@ -45,8 +48,6 @@ export default function TicketViewPage({
 }: TicketViewPageProps) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   const {
     data: ticket,
@@ -59,34 +60,6 @@ export default function TicketViewPage({
         ? ticketApi.getTicketByReference(Number(id))
         : ticketApi.getTicketById(id!),
   });
-
-  const resolveMutation = useMutation({
-    mutationFn: async () => {
-      setLoading(true);
-      return await ticketApi.updateTicketStatus(id!, TicketStatus.COMPLETED);
-    },
-    onSuccess: (res) => {
-      if (res?.error) {
-        toast.error(getErrorMessage(res.error));
-        return;
-      }
-
-      setOpen(false);
-      toast.success("Ticket resuelto exitosamente");
-      // Refresh the data
-      window.location.reload();
-    },
-    onError: (error) => {
-      toast.error(getErrorMessage(error));
-    },
-    onSettled: () => {
-      setLoading(false);
-    },
-  });
-
-  const onResolve = async () => {
-    await resolveMutation.mutate();
-  };
 
   if (error) {
     toast.error("Error loading ticket");
@@ -118,15 +91,13 @@ export default function TicketViewPage({
               </p>
             </div>
           </div>
-          {ticket.status !== TicketStatus.COMPLETED && (
-            <Button
-              onClick={() => setOpen(true)}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <IconCheck className="mr-2 h-4 w-4" />
-              Resolver Ticket
-            </Button>
-          )}
+          {ticket.status !== TicketStatus.COMPLETED &&
+            ticket.status !== TicketStatus.CANCELLED && (
+              <div className="flex gap-2">
+                <ButtonComplete ticketId={id!} />
+                <ButtonCancel ticketId={id!} />
+              </div>
+            )}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -143,15 +114,18 @@ export default function TicketViewPage({
                 <label className="text-sm font-medium">Teléfono:</label>
                 <p>{ticket.requesterPhone}</p>
               </div>
-              {!isValidCoordinates(ticket.location) && (
+              {ticket.location && !isValidCoordinates(ticket.location) && (
                 <div>
                   <label className="text-sm font-medium">Ubicación:</label>
-                  <LocationDisplay location={ticket.location} />
                   <p className="text-sm text-muted-foreground mt-1">
                     {ticket.municipality}
                   </p>
                 </div>
               )}
+              <div>
+                <label className="text-sm font-medium">Descripción:</label>
+                <p className="whitespace-pre-wrap">{ticket.description}</p>
+              </div>
             </CardContent>
           </Card>
 
@@ -192,17 +166,11 @@ export default function TicketViewPage({
                   {TicketPriorityLabels[ticket.priority]}
                 </Badge>
               </div>
-              {ticket.patientId && (
-                <div>
-                  <label className="text-sm font-medium">ID Paciente:</label>
-                  <p>{ticket.patientId}</p>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
 
-        {isValidCoordinates(ticket.location) && (
+        {ticket.location && isValidCoordinates(ticket.location) && (
           <Card>
             <CardHeader>
               <CardTitle>Ubicación</CardTitle>
@@ -216,24 +184,7 @@ export default function TicketViewPage({
           </Card>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Descripción</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="whitespace-pre-wrap">{ticket.description}</p>
-            {ticket.additionalNotes && (
-              <div className="mt-4">
-                <label className="text-sm font-medium">
-                  Notas Adicionales:
-                </label>
-                <p className="whitespace-pre-wrap mt-1">
-                  {ticket.additionalNotes}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {ticket.patientId && <PatientInfoCard patientId={ticket.patientId} />}
 
         {ticket.assignedTo && (
           <Card>
@@ -264,13 +215,6 @@ export default function TicketViewPage({
             </CardContent>
           </Card>
         )}
-
-        <AlertModal
-          isOpen={open}
-          onClose={() => setOpen(false)}
-          onConfirm={onResolve}
-          loading={loading}
-        />
       </div>
     </PageContainer>
   );

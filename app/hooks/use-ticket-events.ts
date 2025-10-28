@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { queryClient } from "~/lib/query-client";
 import { socket } from "~/lib/socket"; // conexión Socket.IO ya configurada
 import { useTicketStore } from "~/store/useTicketStore";
 import { TicketTypeLabels, type Ticket } from "~/types/tickets";
@@ -33,17 +34,27 @@ export function useTicketEvents() {
     });
 
     // Evento: nuevo ticket creado
-    socket.on("ticket.created", (event: TicketEvent) => {
+    socket.on("ticket.created", async (event: TicketEvent) => {
       console.log("🎟️ Nuevo ticket recibido:", event);
+
       addTicket(event.ticket);
       playAlertSound();
       showNotification(event.ticket);
+
+      await queryClient.refetchQueries({
+        queryKey: ["tickets"],
+      });
     });
 
     // Evento: ticket actualizado (opcional)
-    socket.on("ticket.updated", (event: TicketEvent) => {
+    socket.on("ticket.updated", async (event: TicketEvent) => {
       console.log("♻️ Ticket actualizado:", event);
+
       useTicketStore.getState().updateTicket(event.ticket);
+
+      await queryClient.refetchQueries({
+        queryKey: ["tickets"],
+      });
     });
 
     // Evento: desconexión

@@ -6,7 +6,7 @@ import { Breadcrumbs } from "../breadcrumbs";
 import { UserNav } from "./user-nav";
 import { ModeToggle } from "./ThemeToggle/theme-toggle";
 import { NotificationBell } from "../notification-bell";
-import { SoundToggle } from "../sound-toggle";
+// import { SoundToggle } from "../sound-toggle";
 
 export default function Header() {
   return (
@@ -19,7 +19,7 @@ export default function Header() {
 
       <div className="flex items-center gap-3 px-4">
         <NotificationBell />
-        <SoundToggle />
+        {/* <SoundToggle /> */}
         <ModeToggle />
         <UserNav />
 

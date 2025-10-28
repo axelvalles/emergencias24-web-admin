@@ -12,7 +12,6 @@ import {
 } from "nuqs";
 
 export default function TicketListingPage() {
-  // Showcasing the use of search params cache in nested RSCs
   const [page] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
   const [requesterName] = useQueryState("requesterName", parseAsString);
@@ -35,6 +34,7 @@ export default function TicketListingPage() {
     ...(municipality && { municipality }),
     ...(referenceNumber && { referenceNumber }),
   };
+  console.log(filters);
 
   const { data, isLoading, error } = useQuery({
     queryKey: [

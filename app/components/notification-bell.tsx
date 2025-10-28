@@ -12,7 +12,7 @@ import { useTicketStore } from "~/store/useTicketStore";
 import { cn } from "~/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { TicketTypeLabels } from "~/types/tickets";
-import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { es } from "date-fns/locale";
 
 export function NotificationBell() {

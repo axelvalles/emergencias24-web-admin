@@ -1,11 +1,11 @@
-import { httpClient } from './client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Error handling utility
 export function getErrorMessage(error: any): string {
-  if (typeof error === 'string') return error;
+  if (typeof error === "string") return error;
   if (error?.message) return error.message;
   if (error?.error) return error.error;
-  return 'An unexpected error occurred';
+  return "An unexpected error occurred";
 }
 
 // API Response types
@@ -26,7 +26,7 @@ export interface PaginatedResponse<T = any> {
 }
 
 // Re-export APIs from separate modules
-export { patientApi } from './patient-api';
-export { userApi } from './user-api';
-export { authApi } from './auth-api';
-export { ticketApi } from './ticket-api';
+export { patientApi } from "./patient-api";
+export { userApi } from "./user-api";
+export { authApi } from "./auth-api";
+export { ticketApi } from "./ticket-api";

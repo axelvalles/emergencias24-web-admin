@@ -18,7 +18,7 @@ export interface PaginatedResponse<T = any> {
 }
 
 export interface Patient {
-  id: number;
+  id: string;
   user: null;
   first_name: string;
   last_name: string;
@@ -33,7 +33,7 @@ export interface Patient {
 }
 
 export interface PatientDetail {
-  id: number;
+  id: string;
   user: null;
   first_name: string;
   last_name: string;
