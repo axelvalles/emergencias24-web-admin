@@ -11,14 +11,23 @@ import { Bell } from "lucide-react";
 import { useTicketStore } from "~/store/useTicketStore";
 import { cn } from "~/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { TicketTypeLabels } from "~/types/tickets";
+import { TicketTypeLabels, type Ticket } from "~/types/tickets";
 import { formatDistanceToNowStrict } from "date-fns";
 import { es } from "date-fns/locale";
+import { useNavigate } from "react-router";
 
 export function NotificationBell() {
   const tickets = useTicketStore((state) => state.tickets);
+  const removeTicket = useTicketStore((state) => state.removeTicket);
+
   const newTickets = tickets.filter((t) => t.status === "pending");
   const hasNotifications = newTickets.length > 0;
+  const navigate = useNavigate();
+
+  const handleClick = (ticket: Ticket) => {
+    removeTicket(ticket.id);
+    navigate(`/tickets/${ticket.referenceNumber}`);
+  };
 
   return (
     <DropdownMenu>
@@ -62,7 +71,7 @@ export function NotificationBell() {
                 <DropdownMenuItem
                   key={ticket.id}
                   className="flex flex-col items-start space-y-1 cursor-pointer"
-                  onClick={() => console.log("Ver ticket", ticket.id)}
+                  onClick={() => handleClick(ticket)}
                 >
                   <span className="text-sm font-medium text-gray-900">
                     🚨 {TicketTypeLabels[ticket.serviceType]}

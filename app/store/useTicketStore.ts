@@ -6,6 +6,7 @@ interface TicketState {
   tickets: Ticket[];
   addTicket: (ticket: Ticket) => void;
   updateTicket: (ticket: Ticket) => void;
+  removeTicket: (ticketId: string) => void;
 }
 
 export const useTicketStore = create<TicketState>()(
@@ -17,6 +18,10 @@ export const useTicketStore = create<TicketState>()(
       updateTicket: (ticket) =>
         set((state) => ({
           tickets: state.tickets.map((t) => (t.id === ticket.id ? ticket : t)),
+        })),
+      removeTicket: (ticketId) =>
+        set((state) => ({
+          tickets: state.tickets.filter((t) => t.id !== ticketId),
         })),
     }),
     {
