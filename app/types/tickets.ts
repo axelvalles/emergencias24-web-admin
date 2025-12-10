@@ -5,6 +5,7 @@ export enum TicketType {
   MEDICAL_CONSULTATION = "medical_consultation",
   LABORATORY = "laboratory",
   AMBULANCE = "ambulance",
+  EQUIPMENT_RENTAL = "equipment_rental",
 }
 
 export const TicketTypeLabels = {
@@ -14,6 +15,7 @@ export const TicketTypeLabels = {
   [TicketType.MEDICAL_CONSULTATION]: "Consulta médica",
   [TicketType.LABORATORY]: "Laboratorio",
   [TicketType.AMBULANCE]: "Ambulancia",
+  [TicketType.EQUIPMENT_RENTAL]: "Alquiler de equipo",
 };
 
 export enum TicketStatus {

@@ -2,7 +2,6 @@ import { Separator } from "@radix-ui/react-select";
 import PageContainer from "~/components/layout/page-container";
 import { Heading } from "~/components/ui/heading";
 import TicketListingPage from "~/features/tickets/ticket-listing";
-import { cn } from "~/lib/utils";
 
 export default function Tickets() {
   return (

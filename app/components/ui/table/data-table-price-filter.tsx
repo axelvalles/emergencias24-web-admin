@@ -27,7 +27,7 @@ interface DataTablePriceRangeFilterProps<TData> {
 
 export function DataTablePriceRangeFilter<TData>({
   column,
-  title = "Price Range",
+  title = "Rango de Precio",
   useSlider = false,
   step = 10000,
   min = 0,
@@ -117,7 +117,7 @@ export function DataTablePriceRangeFilter<TData>({
               <Input
                 id={`${id}-min`}
                 type="number"
-                placeholder={`Min ${currencySymbol}${min}`}
+                placeholder={`Mín ${currencySymbol}${min}`}
                 min={min}
                 max={max}
                 value={minValue ?? ""}
@@ -139,7 +139,7 @@ export function DataTablePriceRangeFilter<TData>({
               <Input
                 id={`${id}-max`}
                 type="number"
-                placeholder={`Max ${currencySymbol}${max}`}
+                placeholder={`Máx ${currencySymbol}${max}`}
                 min={min}
                 max={max}
                 value={maxValue ?? ""}
@@ -168,9 +168,9 @@ export function DataTablePriceRangeFilter<TData>({
           variant="outline"
           size="sm"
           onClick={onReset}
-          aria-label="Clear price filter"
+          aria-label="Limpiar filtro de precio"
         >
-          Clear
+          Limpiar
         </Button>
       </PopoverContent>
     </Popover>

@@ -54,7 +54,7 @@ export function ThemeSelector() {
   return (
     <div className="flex items-center gap-2">
       <Label htmlFor="theme-selector" className="sr-only">
-        Theme
+        Tema
       </Label>
       <Select value={theme} onValueChange={setTheme}>
         <SelectTrigger
@@ -62,14 +62,14 @@ export function ThemeSelector() {
           className="justify-start *:data-[slot=select-value]:w-12"
         >
           <span className="text-muted-foreground hidden sm:block">
-            Select a theme:
+            Selecciona un tema:
           </span>
-          <span className="text-muted-foreground block sm:hidden">Theme</span>
-          <SelectValue placeholder="Select a theme" />
+          <span className="text-muted-foreground block sm:hidden">Tema</span>
+          <SelectValue placeholder="Selecciona un tema" />
         </SelectTrigger>
         <SelectContent align="end">
           <SelectGroup>
-            <SelectLabel>Default</SelectLabel>
+            <SelectLabel>Predeterminado</SelectLabel>
             {DEFAULT_THEMES.map((theme) => (
               <SelectItem key={theme.name} value={theme.value}>
                 {theme.name}
@@ -78,7 +78,7 @@ export function ThemeSelector() {
           </SelectGroup>
           <SelectSeparator />
           <SelectGroup>
-            <SelectLabel>Scaled</SelectLabel>
+            <SelectLabel>Escalado</SelectLabel>
             {SCALED_THEMES.map((theme) => (
               <SelectItem key={theme.name} value={theme.value}>
                 {theme.name}
@@ -86,7 +86,7 @@ export function ThemeSelector() {
             ))}
           </SelectGroup>
           <SelectGroup>
-            <SelectLabel>Monospaced</SelectLabel>
+            <SelectLabel>Monoespaciado</SelectLabel>
             {MONO_THEMES.map((theme) => (
               <SelectItem key={theme.name} value={theme.value}>
                 {theme.name}

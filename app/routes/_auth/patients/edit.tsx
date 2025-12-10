@@ -20,11 +20,11 @@ export default function EditPatient() {
   });
 
   if (error) {
-    toast.error("Error loading patient");
+    toast.error("Error al cargar el paciente");
   }
 
   if (isLoading) {
-    return <div>Loading patient...</div>;
+    return <div>Cargando paciente...</div>;
   }
 
   console.log(patientData, isLoading);

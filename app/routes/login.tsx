@@ -26,16 +26,20 @@ import { useMutation } from "@tanstack/react-query";
 import { authApi } from "~/http/auth-api";
 import { toast } from "sonner";
 import type { ServerError } from "~/types/errors";
+import { LoadingButton } from "~/components/ui/loading-button";
 
 const loginSchema = z.object({
-  email: z.email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.email("Correo electrónico inválido"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
 export function meta() {
   return [
-    { title: "Login - Emergencias24 Admin" },
-    { name: "description", content: "Login to access the admin panel" },
+    { title: "Iniciar sesión - Emergencias24 Admin" },
+    {
+      name: "description",
+      content: "Inicia sesión para acceder al panel de administración",
+    },
   ];
 }
 
@@ -61,6 +65,7 @@ export default function Login() {
     onSuccess(data) {
       toast.success(`Bienvenido ${data.user.email}`);
       login(data);
+      navigate(from);
     },
     onError(error: ServerError) {
       if (error.message) {
@@ -79,9 +84,11 @@ export default function Login() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Login</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              Iniciar sesión
+            </CardTitle>
             <CardDescription className="text-center">
-              Enter your credentials to access the admin panel
+              Ingresa tus credenciales para acceder al panel administrativo
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -95,9 +102,13 @@ export default function Login() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Correo electrónico</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter your email" {...field} />
+                        <Input
+                          disabled={mutation.isPending}
+                          placeholder="Ingresa tu correo electrónico"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -108,11 +119,12 @@ export default function Login() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Contraseña</FormLabel>
                       <FormControl>
                         <Input
+                          disabled={mutation.isPending}
                           type="password"
-                          placeholder="Enter your password"
+                          placeholder="Ingresa tu contraseña"
                           {...field}
                         />
                       </FormControl>
@@ -120,9 +132,14 @@ export default function Login() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full">
-                  Sign In
-                </Button>
+                <LoadingButton
+                  loading={mutation.isPending}
+                  disabled={mutation.isPending}
+                  type="submit"
+                  className="w-full"
+                >
+                  Iniciar sesión
+                </LoadingButton>
               </form>
             </Form>
           </CardContent>

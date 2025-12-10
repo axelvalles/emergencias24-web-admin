@@ -47,8 +47,8 @@ const mockUsers: User[] = [
 
 export function meta() {
   return [
-    { title: "User Management - Emergencias24 Admin" },
-    { name: "description", content: "Manage users in the admin panel" },
+    { title: "Gestión de Usuarios - Emergencias24 Admin" },
+    { name: "description", content: "Gestiona usuarios en el panel de administración" },
   ];
 }
 
@@ -129,18 +129,18 @@ export default function Users() {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">Manage system users and their roles</p>
+          <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
+          <p className="text-muted-foreground">Gestiona usuarios del sistema y sus roles</p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Add User</Button>
+            <Button>Agregar Usuario</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New User</DialogTitle>
+              <DialogTitle>Crear Nuevo Usuario</DialogTitle>
               <DialogDescription>
-                Add a new user to the system with appropriate role and credentials.
+                Agrega un nuevo usuario al sistema con el rol y credenciales apropiados.
               </DialogDescription>
             </DialogHeader>
             <Form {...createForm}>
@@ -150,9 +150,9 @@ export default function Users() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Correo Electrónico</FormLabel>
                       <FormControl>
-                        <Input placeholder="user@example.com" {...field} />
+                        <Input placeholder="usuario@ejemplo.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -163,9 +163,9 @@ export default function Users() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Contraseña</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Enter password" {...field} />
+                        <Input type="password" placeholder="Ingresa la contraseña" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -176,19 +176,19 @@ export default function Users() {
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Role</FormLabel>
+                      <FormLabel>Rol</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a role" />
+                            <SelectValue placeholder="Selecciona un rol" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                          <SelectItem value={UserRole.DOCTOR}>Doctor</SelectItem>
-                          <SelectItem value={UserRole.NURSE}>Nurse</SelectItem>
-                          <SelectItem value={UserRole.RECEPTIONIST}>Receptionist</SelectItem>
-                          <SelectItem value={UserRole.PATIENT}>Patient</SelectItem>
+                          <SelectItem value={UserRole.ADMIN}>Administrador</SelectItem>
+                          <SelectItem value={UserRole.DOCTOR}>Médico</SelectItem>
+                          <SelectItem value={UserRole.NURSE}>Enfermera</SelectItem>
+                          <SelectItem value={UserRole.RECEPTIONIST}>Recepcionista</SelectItem>
+                          <SelectItem value={UserRole.PATIENT}>Paciente</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -196,7 +196,7 @@ export default function Users() {
                   )}
                 />
                 <Button type="submit" className="w-full">
-                  Create User
+                  Crear Usuario
                 </Button>
               </form>
             </Form>
@@ -206,19 +206,19 @@ export default function Users() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Users</CardTitle>
-          <CardDescription>A list of all users in the system</CardDescription>
+          <CardTitle>Usuarios</CardTitle>
+          <CardDescription>Una lista de todos los usuarios en el sistema</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>Correo Electrónico</TableHead>
+                <TableHead>Rol</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Creado</TableHead>
+                <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -233,7 +233,7 @@ export default function Users() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={user.is_active ? "default" : "secondary"}>
-                      {user.is_active ? "Active" : "Inactive"}
+                      {user.is_active ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
                   <TableCell>{user.created_at.toLocaleDateString()}</TableCell>
@@ -252,14 +252,14 @@ export default function Users() {
                               });
                             }}
                           >
-                            Edit
+                            Editar
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Edit User</DialogTitle>
+                            <DialogTitle>Editar Usuario</DialogTitle>
                             <DialogDescription>
-                              Update user information and role.
+                              Actualiza la información del usuario y el rol.
                             </DialogDescription>
                           </DialogHeader>
                           <Form {...updateForm}>
@@ -269,7 +269,7 @@ export default function Users() {
                                 name="email"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Email</FormLabel>
+                                    <FormLabel>Correo Electrónico</FormLabel>
                                     <FormControl>
                                       <Input {...field} />
                                     </FormControl>
@@ -282,9 +282,9 @@ export default function Users() {
                                 name="password"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>New Password (optional)</FormLabel>
+                                    <FormLabel>Nueva Contraseña (opcional)</FormLabel>
                                     <FormControl>
-                                      <Input type="password" placeholder="Leave empty to keep current" {...field} />
+                                      <Input type="password" placeholder="Deja vacío para mantener actual" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -295,7 +295,7 @@ export default function Users() {
                                 name="role"
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel>Role</FormLabel>
+                                    <FormLabel>Rol</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                       <FormControl>
                                         <SelectTrigger>
@@ -303,11 +303,11 @@ export default function Users() {
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
-                                        <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                                        <SelectItem value={UserRole.DOCTOR}>Doctor</SelectItem>
-                                        <SelectItem value={UserRole.NURSE}>Nurse</SelectItem>
-                                        <SelectItem value={UserRole.RECEPTIONIST}>Receptionist</SelectItem>
-                                        <SelectItem value={UserRole.PATIENT}>Patient</SelectItem>
+                                        <SelectItem value={UserRole.ADMIN}>Administrador</SelectItem>
+                                        <SelectItem value={UserRole.DOCTOR}>Médico</SelectItem>
+                                        <SelectItem value={UserRole.NURSE}>Enfermera</SelectItem>
+                                        <SelectItem value={UserRole.RECEPTIONIST}>Recepcionista</SelectItem>
+                                        <SelectItem value={UserRole.PATIENT}>Paciente</SelectItem>
                                       </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -315,7 +315,7 @@ export default function Users() {
                                 )}
                               />
                               <Button type="submit" className="w-full">
-                                Update User
+                                Actualizar Usuario
                               </Button>
                             </form>
                           </Form>
@@ -326,7 +326,7 @@ export default function Users() {
                         size="sm"
                         onClick={() => onDeleteUser(user.id)}
                       >
-                        Delete
+                        Eliminar
                       </Button>
                     </div>
                   </TableCell>

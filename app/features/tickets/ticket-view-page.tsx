@@ -62,22 +62,22 @@ export default function TicketViewPage({
   });
 
   if (error) {
-    toast.error("Error loading ticket");
+    toast.error("Error al cargar el ticket");
   }
 
   if (isLoading) {
-    return <div>Loading ticket...</div>;
+    return <div>Cargando ticket...</div>;
   }
 
   if (!ticket) {
-    return <div>Ticket not found</div>;
+    return <div>Ticket no encontrado</div>;
   }
 
   return (
     <PageContainer scrollable={false}>
       <div className="flex-1 space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center flex-wrap space-x-4">
             <Button variant="outline" onClick={() => navigate("/tickets")}>
               <IconArrowLeft className="mr-2 h-4 w-4" />
               Volver
@@ -93,7 +93,7 @@ export default function TicketViewPage({
           </div>
           {ticket.status !== TicketStatus.COMPLETED &&
             ticket.status !== TicketStatus.CANCELLED && (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <ButtonComplete ticketId={id!} />
                 <ButtonCancel ticketId={id!} />
               </div>
