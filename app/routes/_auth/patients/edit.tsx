@@ -6,7 +6,7 @@ import { patientApi } from "~/http/patient-api";
 import { useQuery } from "@tanstack/react-query";
 
 export default function EditPatient() {
-  const { id } = useParams();
+  const { id = "" } = useParams();
 
   const {
     data: patientData,
@@ -15,7 +15,7 @@ export default function EditPatient() {
   } = useQuery({
     queryKey: ["patient", id],
     queryFn: () => {
-      return patientApi.getPatientById(Number(id));
+      return patientApi.getPatientByDocument(id);
     },
   });
 
@@ -26,8 +26,6 @@ export default function EditPatient() {
   if (isLoading) {
     return <div>Cargando paciente...</div>;
   }
-
-  console.log(patientData, isLoading);
 
   if (patientData && !isLoading) {
     return (

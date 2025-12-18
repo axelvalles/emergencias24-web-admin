@@ -1,6 +1,6 @@
 import { DataTableColumnHeader } from "~/components/ui/table/data-table-column-header";
 import type { Column, ColumnDef } from "@tanstack/react-table";
-import { Text, Ambulance, Stethoscope, Phone, Home, TestTube, Calendar, Heart, Clock, User, RefreshCw, CheckCircle, XCircle } from "lucide-react";
+import { Text, Ambulance, Stethoscope, Phone, Home, TestTube, Calendar, Heart, Clock, User, RefreshCw, CheckCircle, XCircle, Briefcase, LayoutGrid } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import type { Ticket } from "~/types/tickets";
 import {
@@ -9,6 +9,7 @@ import {
   TicketPriorityLabels,
   TicketType,
   TicketStatus,
+  TicketPriority,
 } from "~/types/tickets";
 import { CellAction } from "./cell-action";
 
@@ -16,7 +17,6 @@ import { CellAction } from "./cell-action";
 const getTicketTypeIcon = (type: TicketType) => {
   switch (type) {
     case TicketType.IMMEDIATE_ATTENTION:
-    case TicketType.IMMEDIATE_CARE:
       return Heart;
     case TicketType.AMBULANCE:
       return Ambulance;
@@ -28,8 +28,12 @@ const getTicketTypeIcon = (type: TicketType) => {
       return TestTube;
     case TicketType.APPOINTMENT:
       return Calendar;
-    default:
+    case TicketType.PLANS:
+      return Briefcase;
+    case TicketType.MEDICAL_CONSULTATION:
       return Stethoscope;
+    default:
+      return LayoutGrid;
   }
 };
 
@@ -113,16 +117,26 @@ export const columns: ColumnDef<Ticket>[] = [
     cell: ({ cell }) => {
       const value = cell.getValue<Ticket["status"]>();
       const label = TicketStatusLabels[value] || value;
+      let variant: "default" | "secondary" | "destructive" | "warning" | "orange" = "secondary";
+
+      switch (value) {
+        case TicketStatus.PENDING:
+          variant = "destructive";
+          break;
+        case TicketStatus.IN_PROGRESS:
+          variant = "orange";
+          break;
+        case TicketStatus.ASSIGNED:
+          variant = "warning";
+          break;
+        case TicketStatus.COMPLETED:
+        case TicketStatus.CANCELLED:
+          variant = "default";
+          break;
+      }
+
       return (
-        <Badge
-          variant={
-            value === "pending"
-              ? "destructive"
-              : value === "completed"
-                ? "default"
-                : "secondary"
-          }
-        >
+        <Badge variant={variant}>
           {label}
         </Badge>
       );
@@ -148,16 +162,22 @@ export const columns: ColumnDef<Ticket>[] = [
     cell: ({ cell }) => {
       const value = cell.getValue<Ticket["priority"]>();
       const label = TicketPriorityLabels[value] || value;
+      let variant: "default" | "secondary" | "destructive" | "warning" | "orange" | "success" = "secondary";
+
+      switch (value) {
+        case TicketPriority.HIGH:
+          variant = "destructive";
+          break;
+        case TicketPriority.MEDIUM:
+          variant = "orange";
+          break;
+        case TicketPriority.LOW:
+          variant = "success";
+          break;
+      }
+
       return (
-        <Badge
-          variant={
-            value === "urgent"
-              ? "destructive"
-              : value === "high"
-                ? "destructive"
-                : "secondary"
-          }
-        >
+        <Badge variant={variant}>
           {label}
         </Badge>
       );

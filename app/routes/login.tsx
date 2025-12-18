@@ -2,7 +2,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate, useLocation } from "react-router";
-import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -21,12 +20,12 @@ import {
 import { Input } from "~/components/ui/input";
 import { AuthGuard } from "~/components/auth-guard";
 import { useAuthStore } from "~/store/useAuthStore";
-import type { LoginDTO } from "~/lib/types";
 import { useMutation } from "@tanstack/react-query";
 import { authApi } from "~/http/auth-api";
 import { toast } from "sonner";
 import type { ServerError } from "~/types/errors";
 import { LoadingButton } from "~/components/ui/loading-button";
+import type { LoginDTO } from "~/types/users";
 
 const loginSchema = z.object({
   email: z.email("Correo electrónico inválido"),

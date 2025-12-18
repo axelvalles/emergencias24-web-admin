@@ -1,4 +1,4 @@
-import { Separator } from "@radix-ui/react-select";
+import { Separator } from "~/components/ui/separator";
 import { IconPlus } from "@tabler/icons-react";
 import { Link } from "react-router";
 import PageContainer from "~/components/layout/page-container";
@@ -14,7 +14,7 @@ export default function Patients() {
         <div className="flex items-start justify-between">
           <Heading title="Pacientes" description="Gestiona los pacientes." />
           <Link
-            to="/patients/new"
+            to="/pacientes/nuevo"
             className={cn(buttonVariants(), "text-xs md:text-sm")}
           >
             <IconPlus className="mr-2 h-4 w-4" /> Agregar nuevo

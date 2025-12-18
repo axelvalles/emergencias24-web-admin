@@ -1,17 +1,16 @@
-;
-
 import type { Column, Table } from "@tanstack/react-table";
 import * as React from "react";
 
 import { DataTableDateFilter } from "@/components/ui/table/data-table-date-filter";
 import { DataTableFacetedFilter } from "@/components/ui/table/data-table-faceted-filter";
 import { DataTableSliderFilter } from "@/components/ui/table/data-table-slider-filter";
-import { DataTableViewOptions } from "@/components/ui/table/data-table-view-options";
+// import { DataTableViewOptions } from "@/components/ui/table/data-table-view-options";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { DataTablePriceRangeFilter } from "./data-table-price-filter";
+import { Label } from "@radix-ui/react-dropdown-menu";
 
 interface DataTableToolbarProps<TData> extends React.ComponentProps<"div"> {
   table: Table<TData>;
@@ -44,7 +43,7 @@ export function DataTableToolbar<TData>({
       )}
       {...props}
     >
-      <div className="flex flex-1 flex-wrap items-center gap-2">
+      <div className="flex flex-1 flex-wrap items-end gap-2">
         {columns.map((column) => (
           <DataTableToolbarFilter key={column.id} column={column} />
         ))}
@@ -63,7 +62,7 @@ export function DataTableToolbar<TData>({
       </div>
       <div className="flex items-center gap-2">
         {children}
-        <DataTableViewOptions table={table} />
+        {/* <DataTableViewOptions table={table} /> */}
       </div>
     </div>
   );
@@ -84,12 +83,15 @@ function DataTableToolbarFilter<TData>({
       switch (columnMeta.variant) {
         case "text":
           return (
-            <Input
-              placeholder={columnMeta.placeholder ?? columnMeta.label}
-              value={(column.getFilterValue() as string) ?? ""}
-              onChange={(event) => column.setFilterValue(event.target.value)}
-              className="h-8 w-40 lg:w-56"
-            />
+            <div className="inline-flex flex-col gap-2">
+              {columnMeta.label ?? <Label>{columnMeta.label}</Label>}
+              <Input
+                placeholder={columnMeta.placeholder}
+                value={(column.getFilterValue() as string) ?? ""}
+                onChange={(event) => column.setFilterValue(event.target.value)}
+                className="h-8 w-40 lg:w-56"
+              />
+            </div>
           );
 
         case "number":

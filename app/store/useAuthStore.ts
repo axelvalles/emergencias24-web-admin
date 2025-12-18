@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { LoginResponse, User } from "~/types/auth";
+import type { LoginResponse, User } from "~/types/users";
 
 interface AuthState {
   user: User | null;
@@ -20,7 +20,7 @@ export const useAuthStore = create<AuthState>()(
       login: (loginResponse: LoginResponse) => {
         set({
           user: loginResponse.user,
-          token: loginResponse.access_token,
+          token: loginResponse.accessToken,
           isAuthenticated: true,
         });
       },

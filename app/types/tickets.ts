@@ -6,6 +6,8 @@ export enum TicketType {
   LABORATORY = "laboratory",
   AMBULANCE = "ambulance",
   EQUIPMENT_RENTAL = "equipment_rental",
+  APPOINTMENT = "appointment",
+  PLANS = "plans",
 }
 
 export const TicketTypeLabels = {
@@ -16,6 +18,8 @@ export const TicketTypeLabels = {
   [TicketType.LABORATORY]: "Laboratorio",
   [TicketType.AMBULANCE]: "Ambulancia",
   [TicketType.EQUIPMENT_RENTAL]: "Alquiler de equipo",
+  [TicketType.APPOINTMENT]: "Cita",
+  [TicketType.PLANS]: "Planes",
 };
 
 export enum TicketStatus {
@@ -38,14 +42,12 @@ export enum TicketPriority {
   LOW = "low",
   MEDIUM = "medium",
   HIGH = "high",
-  URGENT = "urgent",
 }
 
 export const TicketPriorityLabels = {
   [TicketPriority.LOW]: "Baja",
   [TicketPriority.MEDIUM]: "Media",
   [TicketPriority.HIGH]: "Alta",
-  [TicketPriority.URGENT]: "Urgente",
 };
 
 export interface Ticket {
@@ -70,10 +72,11 @@ export interface Ticket {
 
 // types server
 export interface QueryTicketsParams {
-  serviceType?: TicketType;
-  status?: TicketStatus;
+  serviceType?: TicketType[];
+  status?: TicketStatus[];
   priority?: TicketPriority;
   requesterPhone?: string;
+  requesterName?: string;
   municipality?: string;
   assignedTo?: string;
   referenceNumber?: number;

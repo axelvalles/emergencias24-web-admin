@@ -10,11 +10,13 @@ interface TicketTableParams<TData, TValue> {
   data: TData[];
   totalItems: number;
   columns: ColumnDef<TData, TValue>[];
+  isFetching: boolean;
 }
 export function TicketTable<TData, TValue>({
   data = [],
   totalItems = 0,
   columns,
+  isFetching,
 }: TicketTableParams<TData, TValue>) {
   const [pageSize] = useQueryState("perPage", parseAsInteger.withDefault(10));
 
@@ -29,7 +31,7 @@ export function TicketTable<TData, TValue>({
   });
 
   return (
-    <DataTable table={table}>
+    <DataTable table={table} isFetching={isFetching}>
       <DataTableToolbar table={table} />
     </DataTable>
   );

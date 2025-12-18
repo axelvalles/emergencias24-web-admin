@@ -1,4 +1,4 @@
-import type { LoginResponse } from "~/types/auth";
+import type { LoginResponse } from "~/types/users";
 import { httpClient } from "./client";
 
 // Auth API functions

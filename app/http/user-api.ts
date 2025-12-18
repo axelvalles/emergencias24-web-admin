@@ -1,50 +1,60 @@
-import { httpClient } from './client';
+import type { CreateUserDTO, UpdateUserDTO, User } from "~/types/users";
+import { httpClient } from "./client";
 
-// API Response types
-export interface ApiResponse<T = any> {
-  data?: T;
-  error?: string;
-  message?: string;
-  success?: boolean;
-}
+export type UserListFilters = {
+  page?: number;
+  limit?: number;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  role?: string[];
+  status?: string[];
+  sortBy?: string;
+  sortOrder?: "ASC" | "DESC";
+};
 
-export interface PaginatedResponse<T = any> {
-  data: {
-    items: T[];
-    totalCount: number;
-  };
-  message?: string;
-  success?: boolean;
-}
+export type UserListResponse = {
+  data: User[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
 
 // User API functions
 export const userApi = {
   // Get all users
-  getAllUsers: async (params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-  }): Promise<PaginatedResponse<any>> => {
-    return httpClient.get('/users', params);
+  getAllUsers: async (params?: UserListFilters): Promise<UserListResponse> => {
+    return httpClient.get("/users", params);
   },
 
   // Get user by ID
-  getUserById: async (id: string): Promise<ApiResponse<any>> => {
+  getUserById: async (id: string): Promise<User> => {
     return httpClient.get(`/users/${id}`);
   },
 
   // Create new user
-  createUser: async (data: any): Promise<ApiResponse<any>> => {
-    return httpClient.post('/users', data);
+  createUser: async (data: CreateUserDTO): Promise<User> => {
+    return httpClient.post("/users", data);
   },
 
   // Update user
-  updateUser: async (id: string, data: any): Promise<ApiResponse<any>> => {
-    return httpClient.put(`/users/${id}`, data);
+  updateUser: async (id: string, data: UpdateUserDTO): Promise<User> => {
+    return httpClient.patch(`/users/${id}`, data);
   },
 
   // Delete user
-  deleteUser: async (id: string): Promise<ApiResponse<any>> => {
+  deleteUser: async (id: string): Promise<void> => {
     return httpClient.delete(`/users/${id}`);
+  },
+
+  // Activate user
+  activateUser: async (id: string): Promise<User> => {
+    return httpClient.post(`/users/${id}/activate`);
+  },
+
+  // Deactivate user
+  deactivateUser: async (id: string): Promise<User> => {
+    return httpClient.post(`/users/${id}/deactivate`);
   },
 };

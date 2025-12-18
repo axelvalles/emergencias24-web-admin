@@ -1,6 +1,6 @@
 import { FormDatePicker } from "~/components/forms/form-date-picker";
 import { FormInput } from "~/components/forms/form-input";
-import { FormSelect } from "~/components/forms/form-select";
+import { FormSelect, type FormOption } from "~/components/forms/form-select";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Form } from "~/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,20 +11,30 @@ import { LoadingButton } from "~/components/ui/loading-button";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { useMutation } from "@tanstack/react-query";
 import { patientApi, getErrorMessage } from "~/http/api-server";
-import { createPatientSchema, type CreatePatientFormSchema } from "./schemas";
-import type { PatientDetail } from "~/http/patient-api";
+import { patientFormSchema, type PatientFormSchema } from "./schemas";
+import {
+  DocumentTypeLabels,
+  GenderLabels,
+  type PatientDetail,
+  Gender,
+  DocumentType,
+} from "~/types/patients";
+import { FormTextarea } from "~/components/forms/form-textarea";
+import { queryClient } from "~/lib/query-client";
 
-const genderOptions = [
-  { value: "male", label: "Masculino" },
-  { value: "female", label: "Femenino" },
-  { value: "other", label: "Otro" },
-];
+const genderOptions: FormOption[] = Object.entries(GenderLabels).map(
+  ([value, label]) => ({
+    value,
+    label,
+  })
+);
 
-const documentTypeOptions = [
-  { value: "cc", label: "Cédula de ciudadanía" },
-  { value: "ce", label: "Cédula de extranjería" },
-  { value: "passport", label: "Pasaporte" },
-];
+const documentTypeOptions: FormOption[] = Object.entries(
+  DocumentTypeLabels
+).map(([value, label]) => ({
+  value,
+  label,
+}));
 
 export default function PatientForm({
   initialData,
@@ -39,17 +49,16 @@ export default function PatientForm({
   const navigate = useNavigate();
 
   const createMutation = useMutation({
-    mutationFn: async (data: CreatePatientFormSchema) => {
-      return await patientApi.createPatient(data);
+    mutationFn: async (data: PatientFormSchema) => {
+      return await patientApi.createPatient({
+        ...data,
+        birthDate: data.birthDate || undefined,
+      });
     },
-    onSuccess: (data) => {
-      if (data.error) {
-        toast.error(getErrorMessage(data.error));
-        return;
-      }
-
+    onSuccess: async () => {
       toast.success("Paciente creado correctamente");
-      navigate(`/patients?page=${page}&perPage=${pageSize}`);
+      await queryClient.invalidateQueries({ queryKey: ["patient"] });
+      navigate(`/pacientes?page=${page}&perPage=${pageSize}`);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
@@ -57,17 +66,18 @@ export default function PatientForm({
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: CreatePatientFormSchema) => {
-      return await patientApi.updatePatient(initialData!.id.toString(), data);
+    mutationFn: async (data: PatientFormSchema) => {
+      return await patientApi.updatePatient(initialData!.id.toString(), {
+        ...data,
+        birthDate: data.birthDate || undefined,
+      });
     },
-    onSuccess: (data) => {
-      if (data.error) {
-        toast.error(getErrorMessage(data.error));
-        return;
-      }
-
+    onSuccess: async (data) => {
       toast.success("Paciente actualizado correctamente");
-      navigate(`/patients?page=${page}&perPage=${pageSize}`);
+      await queryClient.invalidateQueries({
+        queryKey: ["patient", data.id],
+      });
+      navigate(`/pacientes?page=${page}&perPage=${pageSize}`);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
@@ -76,29 +86,31 @@ export default function PatientForm({
 
   const isExecuting = createMutation.isPending || updateMutation.isPending;
 
-  const form = useForm<CreatePatientFormSchema>({
-    resolver: zodResolver(createPatientSchema),
+  const form = useForm<PatientFormSchema>({
+    resolver: zodResolver(patientFormSchema),
     defaultValues: {
-      first_name: initialData?.first_name || "",
-      last_name: initialData?.last_name || "",
-      birth_date: initialData?.birth_date
-        ? new Date(initialData.birth_date)
+      firstName: initialData?.firstName || "",
+      lastName: initialData?.lastName || "",
+      birthDate: initialData?.birthDate
+        ? new Date(initialData.birthDate)
         : undefined,
-      gender: initialData?.gender || "",
-      document_type: initialData?.document_type || "",
-      document_number: initialData?.document_number || "",
+      gender: initialData?.gender || Gender.MALE,
+      documentType: initialData?.documentType || DocumentType.CC,
+      documentNumber: initialData?.documentNumber || "",
       address: initialData?.address || "",
       city: initialData?.city || "",
       state: initialData?.state || "",
-      zip_code: initialData?.zip_code || "",
+      zipCode: initialData?.zipCode || "",
       phone: initialData?.phone || "",
-      secondary_phone: initialData?.secondary_phone || "",
-      emergency_contact_name: initialData?.emergency_contact_name || "",
-      emergency_contact_phone: initialData?.emergency_contact_phone || "",
+      secondaryPhone: initialData?.secondaryPhone || "",
+      emergencyContactName: initialData?.emergencyContactName || "",
+      emergencyContactPhone: initialData?.emergencyContactPhone || "",
+      allergies: initialData?.allergies || "",
+      medicalConditions: initialData?.medicalConditions || "",
     },
   });
 
-  async function onSubmit(values: CreatePatientFormSchema) {
+  async function onSubmit(values: PatientFormSchema) {
     if (initialData) {
       await updateMutation.mutate(values);
     } else {
@@ -117,24 +129,39 @@ export default function PatientForm({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormSelect
+                disabled={isExecuting || !!initialData}
+                control={form.control}
+                name="documentType"
+                label="Tipo de documento"
+                options={documentTypeOptions}
+                required
+              />
+              <FormInput
+                disabled={isExecuting || !!initialData}
+                control={form.control}
+                name="documentNumber"
+                label="Número de documento"
+                required
+              />
               <FormInput
                 disabled={isExecuting}
                 control={form.control}
-                name="first_name"
+                name="firstName"
                 label="Nombre"
                 required
               />
               <FormInput
                 disabled={isExecuting}
                 control={form.control}
-                name="last_name"
+                name="lastName"
                 label="Apellido"
                 required
               />
               <FormDatePicker
                 disabled={isExecuting}
                 control={form.control}
-                name="birth_date"
+                name="birthDate"
                 label="Fecha de nacimiento"
               />
               <FormSelect
@@ -143,21 +170,6 @@ export default function PatientForm({
                 name="gender"
                 label="Género"
                 options={genderOptions}
-                required
-              />
-              <FormSelect
-                disabled={isExecuting}
-                control={form.control}
-                name="document_type"
-                label="Tipo de documento"
-                options={documentTypeOptions}
-                required
-              />
-              <FormInput
-                disabled={isExecuting}
-                control={form.control}
-                name="document_number"
-                label="Número de documento"
                 required
               />
               <FormInput
@@ -181,7 +193,7 @@ export default function PatientForm({
               <FormInput
                 disabled={isExecuting}
                 control={form.control}
-                name="zip_code"
+                name="zipCode"
                 label="Código postal"
               />
               <FormInput
@@ -193,20 +205,34 @@ export default function PatientForm({
               <FormInput
                 disabled={isExecuting}
                 control={form.control}
-                name="secondary_phone"
+                name="secondaryPhone"
                 label="Teléfono secundario"
               />
               <FormInput
                 disabled={isExecuting}
                 control={form.control}
-                name="emergency_contact_name"
+                name="emergencyContactName"
                 label="Nombre del contacto de emergencia"
               />
               <FormInput
                 disabled={isExecuting}
                 control={form.control}
-                name="emergency_contact_phone"
+                name="emergencyContactPhone"
                 label="Teléfono del contacto de emergencia"
+              />
+
+              <FormTextarea
+                disabled={isExecuting}
+                control={form.control}
+                name="allergies"
+                label="Alergias"
+              />
+
+              <FormTextarea
+                disabled={isExecuting}
+                control={form.control}
+                name="medicalConditions"
+                label="Condiciones médicas"
               />
             </div>
 

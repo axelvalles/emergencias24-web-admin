@@ -37,7 +37,7 @@ function FormSelect<
   description,
   required,
   options,
-  placeholder = "Select an option",
+  placeholder = "Seleccionar...",
   disabled,
   className,
 }: FormSelectProps<TFieldValues, TName>) {
@@ -59,7 +59,7 @@ function FormSelect<
             disabled={disabled}
           >
             <FormControl>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
             </FormControl>

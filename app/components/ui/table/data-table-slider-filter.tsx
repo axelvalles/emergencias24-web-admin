@@ -166,7 +166,7 @@ export function DataTableSliderFilter<TData>({
           </p>
           <div className='flex items-center gap-4'>
             <Label htmlFor={`${id}-from`} className='sr-only'>
-              From
+              Desde
             </Label>
             <div className='relative'>
               <Input
@@ -232,7 +232,7 @@ export function DataTableSliderFilter<TData>({
           size='sm'
           onClick={onReset}
         >
-          Clear
+          Limpiar
         </Button>
       </PopoverContent>
     </Popover>
