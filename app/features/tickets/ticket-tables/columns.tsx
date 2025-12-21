@@ -1,6 +1,22 @@
 import { DataTableColumnHeader } from "~/components/ui/table/data-table-column-header";
 import type { Column, ColumnDef } from "@tanstack/react-table";
-import { Text, Ambulance, Stethoscope, Phone, Home, TestTube, Calendar, Heart, Clock, User, RefreshCw, CheckCircle, XCircle, Briefcase, LayoutGrid } from "lucide-react";
+import {
+  Text,
+  Ambulance,
+  Stethoscope,
+  Phone,
+  Home,
+  TestTube,
+  Calendar,
+  Heart,
+  Clock,
+  User,
+  RefreshCw,
+  CheckCircle,
+  XCircle,
+  Briefcase,
+  LayoutGrid,
+} from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import type { Ticket } from "~/types/tickets";
 import {
@@ -12,6 +28,7 @@ import {
   TicketPriority,
 } from "~/types/tickets";
 import { CellAction } from "./cell-action";
+import { format } from "date-fns";
 
 // Icon mapping for ticket types
 const getTicketTypeIcon = (type: TicketType) => {
@@ -117,7 +134,12 @@ export const columns: ColumnDef<Ticket>[] = [
     cell: ({ cell }) => {
       const value = cell.getValue<Ticket["status"]>();
       const label = TicketStatusLabels[value] || value;
-      let variant: "default" | "secondary" | "destructive" | "warning" | "orange" = "secondary";
+      let variant:
+        | "default"
+        | "secondary"
+        | "destructive"
+        | "warning"
+        | "orange" = "secondary";
 
       switch (value) {
         case TicketStatus.PENDING:
@@ -135,11 +157,7 @@ export const columns: ColumnDef<Ticket>[] = [
           break;
       }
 
-      return (
-        <Badge variant={variant}>
-          {label}
-        </Badge>
-      );
+      return <Badge variant={variant}>{label}</Badge>;
     },
     meta: {
       label: "Estado",
@@ -162,7 +180,13 @@ export const columns: ColumnDef<Ticket>[] = [
     cell: ({ cell }) => {
       const value = cell.getValue<Ticket["priority"]>();
       const label = TicketPriorityLabels[value] || value;
-      let variant: "default" | "secondary" | "destructive" | "warning" | "orange" | "success" = "secondary";
+      let variant:
+        | "default"
+        | "secondary"
+        | "destructive"
+        | "warning"
+        | "orange"
+        | "success" = "secondary";
 
       switch (value) {
         case TicketPriority.HIGH:
@@ -176,11 +200,7 @@ export const columns: ColumnDef<Ticket>[] = [
           break;
       }
 
-      return (
-        <Badge variant={variant}>
-          {label}
-        </Badge>
-      );
+      return <Badge variant={variant}>{label}</Badge>;
     },
   },
   {
@@ -191,7 +211,7 @@ export const columns: ColumnDef<Ticket>[] = [
     ),
     cell: ({ cell }) => {
       const value = cell.getValue<Ticket["createdAt"]>();
-      return <div>{new Date(value).toLocaleDateString()}</div>;
+      return <div>{format(value, "dd/MM/yyyy hh:mm a")}</div>;
     },
   },
   {

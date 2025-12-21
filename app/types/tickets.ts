@@ -1,3 +1,6 @@
+import type { PatientDetail } from "./patients";
+import type { User } from "./users";
+
 export enum TicketType {
   IMMEDIATE_ATTENTION = "immediate_attention",
   TELEMEDICINE = "telemedicine",
@@ -56,18 +59,20 @@ export interface Ticket {
   serviceType: TicketType;
   status: TicketStatus;
   priority: TicketPriority;
-  patientId: null | string;
+  patient: PatientDetail | null;
   requesterPhone: string;
   requesterName: string;
   location: string;
-  municipality: string;
+  municipality: string | null;
+  speciality: string | null;
   description: string;
-  additionalNotes: string | null;
-  assignedTo: string | null;
-  assignedAt: string | null;
-  completedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
+  note: string | null;
+  cancellationReason: string;
+  assignedUser: User | null;
+  assignedAt: Date | null;
+  completedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // types server
@@ -86,4 +91,15 @@ export interface QueryTicketsParams {
   limit?: number;
   sortBy?: string;
   sortOrder?: "ASC" | "DESC";
+}
+
+export interface TicketStatusHistory {
+  id: string;
+  status: TicketStatus;
+  changedBy?: {
+    id: string;
+    fullName: string;
+  } | null;
+  comment?: string;
+  createdAt: string;
 }

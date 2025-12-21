@@ -57,4 +57,9 @@ export const userApi = {
   deactivateUser: async (id: string): Promise<User> => {
     return httpClient.post(`/users/${id}/deactivate`);
   },
+
+  // Search users
+  searchUsers: async (params?: { term?: string; role?: string[]; limit?: number }): Promise<User[]> => {
+    return httpClient.get("/users/search", params);
+  },
 };

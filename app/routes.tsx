@@ -36,7 +36,7 @@ export default [
 
     ...prefix("tickets", [
       index("./routes/_auth/tickets.tsx"),
-      route(":id", "./routes/_auth/tickets/$id.tsx"),
+      route(":referenceNumber", "./routes/_auth/tickets/ticketDetail.tsx"),
     ]),
   ]),
 

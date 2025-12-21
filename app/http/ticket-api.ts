@@ -1,6 +1,11 @@
 import type { ApiResponse } from "./api-server";
 import { httpClient } from "./client";
-import type { Ticket, QueryTicketsParams, TicketStatus } from "~/types/tickets";
+import type {
+  Ticket,
+  QueryTicketsParams,
+  TicketStatus,
+  TicketStatusHistory,
+} from "~/types/tickets";
 
 // Ticket API functions
 export const ticketApi = {
@@ -27,7 +32,9 @@ export const ticketApi = {
 
   // Get ticket by reference number
   getTicketByReference: async (referenceNumber: number): Promise<Ticket> => {
-    return httpClient.get(`/tickets/reference/${referenceNumber}`);
+    return httpClient.get(
+      `/tickets/get-by-reference-number/${referenceNumber}`
+    );
   },
 
   // Update ticket status (resolve ticket)
@@ -42,7 +49,27 @@ export const ticketApi = {
     return httpClient.patch(`/tickets/${id}/complete`);
   },
 
-  cancelTicket: async (id: string): Promise<ApiResponse<Ticket>> => {
-    return httpClient.patch(`/tickets/${id}/cancel`);
+  cancelTicket: async (
+    id: string,
+    cancellationReason?: string
+  ): Promise<ApiResponse<Ticket>> => {
+    return httpClient.patch(`/tickets/${id}/cancel`, {
+      cancellationReason,
+    });
+  },
+
+  assignTicket: async (
+    id: string,
+    userId: string
+  ): Promise<ApiResponse<Ticket>> => {
+    return httpClient.patch(`/tickets/${id}/assign/${userId}`);
+  },
+
+  getTicketHistory: async (id: string): Promise<TicketStatusHistory[]> => {
+    return httpClient.get(`/tickets/${id}/history`);
+  },
+
+  startTicket: async (id: string): Promise<ApiResponse<Ticket>> => {
+    return httpClient.patch(`/tickets/${id}/start`);
   },
 };

@@ -1,70 +1,55 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ticketApi } from "~/http/api-server";
-import { getErrorMessage } from "~/http/api-server";
 import { Button } from "~/components/ui/button";
+import { ConfirmModal } from "~/components/modal/confirm-modal";
 import { IconCheck } from "@tabler/icons-react";
-import { AlertModal } from "~/components/modal/alert-modal";
-import { LoadingButton } from "~/components/ui/loading-button";
+import { useParams } from "react-router";
 
 interface ButtonCompleteProps {
   ticketId: string;
-  disabled?: boolean;
 }
 
-export default function ButtonComplete({
-  ticketId,
-  disabled = false,
-}: ButtonCompleteProps) {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+export default function ButtonComplete({ ticketId }: ButtonCompleteProps) {
+  const { referenceNumber } = useParams();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const completeMutation = useMutation({
-    mutationFn: async () => {
-      setLoading(true);
-      return await ticketApi.completeTicket(ticketId);
-    },
-    onSuccess: (res) => {
-      if (res?.error) {
-        toast.error(getErrorMessage(res.error));
-        return;
-      }
-
-      setOpen(false);
+    mutationFn: () => ticketApi.completeTicket(ticketId),
+    onSuccess: () => {
       toast.success("Ticket completado exitosamente");
-      // Refresh the data
-      window.location.reload();
+      queryClient.invalidateQueries({
+        queryKey: ["ticket-by-reference", referenceNumber],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["ticket-history", ticketId],
+      });
+      setIsModalOpen(false);
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error));
-    },
-    onSettled: () => {
-      setLoading(false);
+      toast.error("Error al completar el ticket");
+      console.error(error);
     },
   });
 
-  const onComplete = async () => {
-    await completeMutation.mutate();
+  const handleComplete = () => {
+    completeMutation.mutate();
   };
 
   return (
     <>
-      <LoadingButton
-        onClick={() => setOpen(true)}
-        className="bg-green-600 hover:bg-green-700"
-        disabled={disabled || loading}
-        loading={loading}
-      >
+      <Button onClick={() => setIsModalOpen(true)} variant="success" size="sm">
         <IconCheck className="mr-2 h-4 w-4" />
-        Completar Ticket
-      </LoadingButton>
-
-      <AlertModal
-        isOpen={open}
-        onClose={() => setOpen(false)}
-        onConfirm={onComplete}
-        loading={loading}
+        Completar
+      </Button>
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleComplete}
+        loading={completeMutation.isPending}
+        confirmText="COMPLETAR TICKET"
       />
     </>
   );
