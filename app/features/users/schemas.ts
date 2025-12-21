@@ -24,7 +24,7 @@ export const userFormSchema = z.object({
     .email({ message: "Email inválido" })
     .min(1, { message: "El correo es obligatorio" })
     .max(100, { message: "Máximo 100 caracteres" }),
-  role: z.nativeEnum(UserRole, {
+  role: z.enum(UserRole, {
     error: "El rol es obligatorio",
   }),
   password: z

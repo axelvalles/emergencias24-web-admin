@@ -1,11 +1,11 @@
 export enum PlanType {
   FAMILY = "FAMILY",
-  ENTERPRISE = "ENTERPRISE",
+  CORPORATE = "CORPORATE",
 }
 
 export const PlanTypeLabels: Record<PlanType, string> = {
   [PlanType.FAMILY]: "Familiar",
-  [PlanType.ENTERPRISE]: "Empresarial",
+  [PlanType.CORPORATE]: "Corporativo",
 };
 
 export enum PlanStatus {
@@ -19,18 +19,11 @@ export const PlanStatusLabels: Record<PlanStatus, string> = {
 };
 
 export interface PlanBenefits {
-  consultations?: number;
+  consultations: boolean;
   emergencyCoverage: boolean;
   dental: boolean;
-  ophthalmology?: boolean;
-  optometria?: boolean;
+  optometry?: boolean;
   notes?: string;
-}
-
-export interface PlanGroup {
-  id: string;
-  name: string;
-  membersCount?: number;
 }
 
 export interface Plan {
@@ -38,16 +31,11 @@ export interface Plan {
   name: string;
   description?: string | null;
   planType: PlanType;
-  minMembers?: number | null;
   benefits: PlanBenefits;
   status: PlanStatus;
   monthlyCost?: number | null;
-  annualCost?: number | null;
-  validFrom?: string | null;
-  validUntil?: string | null;
   createdAt: string;
   updatedAt?: string | null;
-  groups?: PlanGroup[];
 }
 
 export type PlanDetail = Plan;
@@ -56,32 +44,22 @@ export interface CreatePlanDTO {
   name: string;
   description?: string;
   planType: PlanType;
-  minMembers?: number;
   benefits: PlanBenefits;
+  status?: PlanStatus;
   monthlyCost?: number;
-  annualCost?: number;
-  validFrom?: string;
-  validUntil?: string;
 }
 
-export interface UpdatePlanDTO extends Partial<CreatePlanDTO> {
-  status?: PlanStatus;
-}
+export type UpdatePlanDTO = Partial<CreatePlanDTO>;
 
 export interface PlanListFilters {
   page?: number;
   limit?: number;
   name?: string;
+  description?: string;
   status?: PlanStatus[];
   planType?: PlanType[];
-  minMembersMin?: number;
-  minMembersMax?: number;
   monthlyCostMin?: number;
   monthlyCostMax?: number;
-  annualCostMin?: number;
-  annualCostMax?: number;
-  validFrom?: string;
-  validUntil?: string;
   sortBy?: string;
   sortOrder?: "ASC" | "DESC";
 }

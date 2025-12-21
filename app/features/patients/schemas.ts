@@ -13,10 +13,10 @@ export const patientFormSchema = z.object({
     .min(1, { message: "El apellido es obligatorio" })
     .max(100, { message: "Máximo 100 caracteres" }),
   birthDate: z.date().optional().nullable(),
-  gender: z.nativeEnum(Gender, {
+  gender: z.enum(Gender, {
     error: "El género es obligatorio",
   }),
-  documentType: z.nativeEnum(DocumentType, {
+  documentType: z.enum(DocumentType, {
     error: "El tipo de documento es obligatorio",
   }),
   documentNumber: z

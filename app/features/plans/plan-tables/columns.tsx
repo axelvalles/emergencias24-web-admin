@@ -7,7 +7,6 @@ import {
   PlanTypeLabels,
   type Plan,
 } from "~/types/plans";
-import { formatDate } from "~/lib/format";
 import { CellAction } from "./cell-action";
 
 const planTypeFilterOptions = Object.entries(PlanTypeLabels).map(
@@ -62,7 +61,7 @@ export const columns: ColumnDef<Plan>[] = [
     },
     meta: {
       label: "Nombre",
-      placeholder: "Buscar...",
+      placeholder: "Buscar por nombre...",
       variant: "text",
     },
     enableColumnFilter: true,
@@ -117,45 +116,6 @@ export const columns: ColumnDef<Plan>[] = [
       variant: "price",
     },
     enableColumnFilter: true,
-  },
-  {
-    id: "minMembers",
-    accessorKey: "minMembers",
-    header: ({ column }: { column: Column<Plan> }) => (
-      <DataTableColumnHeader column={column} title="Mín. miembros" />
-    ),
-    cell: ({ row }) => row.original.minMembers ?? "—",
-    enableColumnFilter: false,
-  },
-  {
-    id: "validFrom",
-    accessorKey: "validFrom",
-    header: ({ column }: { column: Column<Plan> }) => (
-      <DataTableColumnHeader column={column} title="Vigencia" />
-    ),
-    cell: ({ row }) => {
-      const from = formatDate(row.original.validFrom ?? undefined, {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-      const until = formatDate(row.original.validUntil ?? undefined, {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-
-      if (!from && !until) {
-        return "—";
-      }
-
-      return (
-        <div className="text-sm text-muted-foreground">
-          {from}
-          {until ? ` → ${until}` : ""}
-        </div>
-      );
-    },
   },
   {
     id: "actions",

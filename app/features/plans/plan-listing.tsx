@@ -93,7 +93,7 @@ export default function PlanListingPage() {
   }
 
   if (isLoading) {
-    return <DataTableSkeleton columnCount={6} rowCount={8} filterCount={5} />;
+    return <DataTableSkeleton columnCount={5} rowCount={10} filterCount={4} />;
   }
 
   const plans = data?.data ?? [];

@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -10,7 +9,6 @@ import { FormInput } from "~/components/forms/form-input";
 import { FormSelect, type FormOption } from "~/components/forms/form-select";
 import { FormSwitch } from "~/components/forms/form-switch";
 import { FormTextarea } from "~/components/forms/form-textarea";
-import { FormDatePicker } from "~/components/forms/form-date-picker";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Form } from "~/components/ui/form";
 import { LoadingButton } from "~/components/ui/loading-button";
@@ -26,11 +24,10 @@ const planTypeOptions: FormOption[] = Object.entries(PlanTypeLabels).map(
 );
 
 const defaultBenefits = {
-  consultations: undefined,
+  consultations: false,
   emergencyCoverage: false,
   dental: false,
-  ophthalmology: false,
-  optometria: false,
+  optometry: false,
   notes: "",
 } satisfies PlanFormSchema["benefits"];
 
@@ -38,22 +35,16 @@ const getDefaultValues = (initialData: PlanDetail | null): PlanFormSchema => ({
   name: initialData?.name ?? "",
   description: initialData?.description ?? "",
   planType: initialData?.planType ?? PlanType.FAMILY,
-  minMembers: initialData?.minMembers ?? undefined,
   benefits: {
     consultations: initialData?.benefits?.consultations ?? defaultBenefits.consultations,
     emergencyCoverage:
       initialData?.benefits?.emergencyCoverage ?? defaultBenefits.emergencyCoverage,
     dental: initialData?.benefits?.dental ?? defaultBenefits.dental,
-    ophthalmology:
-      initialData?.benefits?.ophthalmology ?? defaultBenefits.ophthalmology,
-    optometria:
-      initialData?.benefits?.optometria ?? defaultBenefits.optometria,
+    optometry:
+      initialData?.benefits?.optometry ?? defaultBenefits.optometry,
     notes: initialData?.benefits?.notes ?? defaultBenefits.notes,
   },
   monthlyCost: initialData?.monthlyCost ?? undefined,
-  annualCost: initialData?.annualCost ?? undefined,
-  validFrom: initialData?.validFrom ? new Date(initialData.validFrom) : undefined,
-  validUntil: initialData?.validUntil ? new Date(initialData.validUntil) : undefined,
 });
 
 const buildCreatePayload = (values: PlanFormSchema) => {
@@ -61,13 +52,10 @@ const buildCreatePayload = (values: PlanFormSchema) => {
     name: values.name.trim(),
     planType: values.planType,
     benefits: {
+      consultations: values.benefits.consultations,
       emergencyCoverage: values.benefits.emergencyCoverage,
       dental: values.benefits.dental,
-      ophthalmology: values.benefits.ophthalmology,
-      optometria: values.benefits.optometria,
-      ...(typeof values.benefits.consultations === "number"
-        ? { consultations: values.benefits.consultations }
-        : {}),
+      optometry: values.benefits.optometry,
       ...(values.benefits.notes && values.benefits.notes.trim().length > 0
         ? { notes: values.benefits.notes.trim() }
         : {}),
@@ -75,18 +63,8 @@ const buildCreatePayload = (values: PlanFormSchema) => {
     ...(values.description && values.description.trim().length > 0
       ? { description: values.description.trim() }
       : {}),
-    ...(typeof values.minMembers === "number"
-      ? { minMembers: values.minMembers }
-      : {}),
     ...(typeof values.monthlyCost === "number"
       ? { monthlyCost: values.monthlyCost }
-      : {}),
-    ...(typeof values.annualCost === "number"
-      ? { annualCost: values.annualCost }
-      : {}),
-    ...(values.validFrom ? { validFrom: values.validFrom.toISOString() } : {}),
-    ...(values.validUntil
-      ? { validUntil: values.validUntil.toISOString() }
       : {}),
   } satisfies Parameters<typeof planApi.createPlan>[0];
 
@@ -112,22 +90,6 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
     resolver: zodResolver(planFormSchema),
     defaultValues: getDefaultValues(initialData),
   });
-
-  const planTypeValue = form.watch("planType");
-  const validFrom = form.watch("validFrom");
-  const validUntil = form.watch("validUntil");
-
-  useEffect(() => {
-    if (planTypeValue !== PlanType.ENTERPRISE) {
-      form.setValue("minMembers", undefined);
-    }
-  }, [planTypeValue, form]);
-
-  useEffect(() => {
-    if (validFrom && validUntil && validUntil < validFrom) {
-      form.setValue("validUntil", undefined);
-    }
-  }, [validFrom, validUntil, form]);
 
   const createMutation = useMutation({
     mutationFn: async (values: PlanFormSchema) => {
@@ -170,8 +132,6 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
     }
   }
 
-  const shouldShowGroupFields = planTypeValue === PlanType.ENTERPRISE;
-
   return (
     <Card className="mx-auto w-full">
       <CardHeader>
@@ -198,26 +158,6 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
                 disabled={isExecuting}
                 required
               />
-              {shouldShowGroupFields && (
-                <FormInput
-                  control={form.control}
-                  name="minMembers"
-                  label="Mínimo de miembros"
-                  type="number"
-                  min={1}
-                  disabled={isExecuting}
-                />
-              )}
-              <FormTextarea
-                control={form.control}
-                name="description"
-                label="Descripción"
-                disabled={isExecuting}
-                className="md:col-span-2"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormInput
                 control={form.control}
                 name="monthlyCost"
@@ -227,27 +167,12 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
                 min={0}
                 disabled={isExecuting}
               />
-              <FormInput
+              <FormTextarea
                 control={form.control}
-                name="annualCost"
-                label="Costo anual"
-                type="number"
-                step="0.01"
-                min={0}
+                name="description"
+                label="Descripción"
                 disabled={isExecuting}
-              />
-              <FormDatePicker
-                control={form.control}
-                name="validFrom"
-                label="Vigencia desde"
-                disabled={isExecuting}
-              />
-              <FormDatePicker
-                control={form.control}
-                name="validUntil"
-                label="Vigencia hasta"
-                disabled={isExecuting}
-                config={{ minDate: validFrom }}
+                className="md:col-span-2"
               />
             </div>
 
@@ -260,6 +185,13 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
               </div>
               <Separator />
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormSwitch
+                  control={form.control}
+                  name="benefits.consultations"
+                  label="Consultas incluidas"
+                  disabled={isExecuting}
+                  showDescription={false}
+                />
                 <FormSwitch
                   control={form.control}
                   name="benefits.emergencyCoverage"
@@ -276,25 +208,10 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
                 />
                 <FormSwitch
                   control={form.control}
-                  name="benefits.ophthalmology"
-                  label="Oftalmología"
-                  disabled={isExecuting}
-                  showDescription={false}
-                />
-                <FormSwitch
-                  control={form.control}
-                  name="benefits.optometria"
+                  name="benefits.optometry"
                   label="Optometría"
                   disabled={isExecuting}
                   showDescription={false}
-                />
-                <FormInput
-                  control={form.control}
-                  name="benefits.consultations"
-                  label="Consultas incluidas"
-                  type="number"
-                  min={0}
-                  disabled={isExecuting}
                 />
                 <FormTextarea
                   control={form.control}
@@ -306,13 +223,15 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
               </div>
             </div>
 
-            <LoadingButton
-              loading={isExecuting}
-              disabled={isExecuting}
-              type="submit"
-            >
-              {initialData ? "Actualizar plan" : "Crear plan"}
-            </LoadingButton>
+            <div className="flex justify-end">
+              <LoadingButton
+                loading={isExecuting}
+                disabled={isExecuting}
+                type="submit"
+              >
+                {initialData ? "Actualizar plan" : "Crear plan"}
+              </LoadingButton>
+            </div>
           </form>
         </Form>
       </CardContent>
