@@ -30,7 +30,7 @@ export enum TicketStatus {
   ASSIGNED = "assigned",
   IN_PROGRESS = "in_progress",
   COMPLETED = "completed",
-  CANCELLED = "cancelled",
+  CANCELED = "CANCELED",
 }
 
 export const TicketStatusLabels = {
@@ -38,7 +38,7 @@ export const TicketStatusLabels = {
   [TicketStatus.ASSIGNED]: "Asignado",
   [TicketStatus.IN_PROGRESS]: "En Proceso",
   [TicketStatus.COMPLETED]: "Completado",
-  [TicketStatus.CANCELLED]: "Cancelado",
+  [TicketStatus.CANCELED]: "Cancelado",
 };
 
 export enum TicketPriority {

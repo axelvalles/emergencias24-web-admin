@@ -1,11 +1,13 @@
 export enum PlanType {
   FAMILY = "FAMILY",
   CORPORATE = "CORPORATE",
+  GROUP = "GROUP",
 }
 
 export const PlanTypeLabels: Record<PlanType, string> = {
   [PlanType.FAMILY]: "Familiar",
   [PlanType.CORPORATE]: "Corporativo",
+  [PlanType.GROUP]: "Grupal/Colectivo",
 };
 
 export enum PlanStatus {

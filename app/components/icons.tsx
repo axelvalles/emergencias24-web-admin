@@ -5,6 +5,7 @@ import {
   IconUserCog,
   IconPackage,
   IconBuilding,
+  IconCreditCard,
 } from "@tabler/icons-react";
 import type { IconProps } from "@tabler/icons-react";
 
@@ -17,4 +18,5 @@ export const Icons = {
   users: IconUserCog,
   plans: IconPackage,
   companies: IconBuilding,
+  subscriptions: IconCreditCard,
 };

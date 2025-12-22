@@ -10,11 +10,14 @@ import {
 import { toast } from "sonner";
 
 import { DataTableSkeleton } from "~/components/ui/table/data-table-skeleton";
-import { getErrorMessage, planApi } from "~/http/api-server";
-import { PlanStatus, PlanType } from "~/types/plans";
-import type { PlanListFilters } from "~/types/plans";
-import { PlanTable } from "./plan-tables";
-import { columns } from "./plan-tables/columns";
+import { getErrorMessage, planSubscriptionApi } from "~/http/api-server";
+import {
+  PlanSubscriptionStatus,
+  PayerType,
+  type PlanSubscriptionListFilters,
+} from "~/types/plan-subscriptions";
+import { PlanSubscriptionTable } from "./plan-subscription-tables";
+import { columns } from "./plan-subscription-tables/columns";
 
 const sortSchema = z.array(z.object({ id: z.string(), desc: z.boolean() }));
 
@@ -33,52 +36,41 @@ const toEnumArray = <T extends string>(
   return filtered.length > 0 ? filtered : undefined;
 };
 
-const parsePriceRange = (value: string | null) => {
-  if (!value) {
-    return {} as { monthlyCostMin?: number; monthlyCostMax?: number };
-  }
-
-  const [minRaw, maxRaw] = value.split(",");
-  const min = Number(minRaw);
-  const max = Number(maxRaw);
-
-  return {
-    ...(Number.isFinite(min) ? { monthlyCostMin: min } : {}),
-    ...(Number.isFinite(max) ? { monthlyCostMax: max } : {}),
-  } as { monthlyCostMin?: number; monthlyCostMax?: number };
-};
-
-export default function PlanListingPage() {
+export default function PlanSubscriptionListingPage() {
   const [page] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
-  const [name] = useQueryState("name", parseAsString);
-  const [planType] = useQueryState("planType", parseAsArrayOf(parseAsString));
+  const [patientId] = useQueryState("patientId", parseAsString);
+  const [planId] = useQueryState("planId", parseAsString);
+  const [companyId] = useQueryState("companyId", parseAsString);
   const [status] = useQueryState("status", parseAsArrayOf(parseAsString));
-  const [monthlyCost] = useQueryState("monthlyCost", parseAsString);
+  const [payerType] = useQueryState("payerType", parseAsArrayOf(parseAsString));
   const [sort] = useQueryState("sort", parseAsJson(sortSchema));
 
   const sortBy = sort && sort.length > 0 ? sort[0].id : undefined;
   const sortOrder =
     sort && sort.length > 0 ? (sort[0].desc ? "DESC" : "ASC") : undefined;
 
-  const statusFilters = toEnumArray(status, Object.values(PlanStatus));
-  const planTypeFilters = toEnumArray(planType, Object.values(PlanType));
-  const priceFilters = parsePriceRange(monthlyCost);
+  const statusFilters = toEnumArray(
+    status,
+    Object.values(PlanSubscriptionStatus)
+  );
+  const payerTypeFilters = toEnumArray(payerType, Object.values(PayerType));
 
-  const filters: PlanListFilters = {
+  const filters: PlanSubscriptionListFilters = {
     page,
     limit: pageLimit,
-    ...(name ? { name } : {}),
+    ...(patientId ? { patientId } : {}),
+    ...(planId ? { planId } : {}),
+    ...(companyId ? { companyId } : {}),
     ...(statusFilters ? { status: statusFilters } : {}),
-    ...(planTypeFilters ? { planType: planTypeFilters } : {}),
-    ...priceFilters,
+    ...(payerTypeFilters ? { payerType: payerTypeFilters } : {}),
     ...(sortBy ? { sortBy } : {}),
     ...(sortOrder ? { sortOrder: sortOrder as "ASC" | "DESC" } : {}),
   };
 
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: ["plans", filters],
-    queryFn: () => planApi.getAllPlans(filters),
+    queryKey: ["plan-subscriptions", filters],
+    queryFn: () => planSubscriptionApi.getAllPlanSubscriptions(filters),
     placeholderData: (prev) => prev,
   });
 
@@ -87,15 +79,15 @@ export default function PlanListingPage() {
   }
 
   if (isLoading) {
-    return <DataTableSkeleton columnCount={5} rowCount={10} filterCount={4} />;
+    return <DataTableSkeleton columnCount={7} rowCount={10} filterCount={2} />;
   }
 
-  const plans = data?.data ?? [];
+  const subscriptions = data?.data ?? [];
   const totalItems = data?.total ?? 0;
 
   return (
-    <PlanTable
-      data={plans}
+    <PlanSubscriptionTable
+      data={subscriptions}
       totalItems={totalItems}
       columns={columns}
       isFetching={isFetching}

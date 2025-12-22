@@ -16,7 +16,7 @@ import { Company } from 'src/companies/entities/company.entity';
 export enum PlanSubscriptionStatus {
   ACTIVE = 'ACTIVE',
   SUSPENDED = 'SUSPENDED',
-  CANCELLED = 'CANCELLED',
+  CANCELED = 'CANCELED',
   EXPIRED = 'EXPIRED',
 }
 

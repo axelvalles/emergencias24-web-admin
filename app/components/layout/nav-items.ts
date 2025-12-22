@@ -60,6 +60,14 @@ export const navItems: NavItem[] = [
     items: [],
   },
   {
+    title: "Suscripciones",
+    url: "/suscripciones",
+    icon: "subscriptions",
+    shortcut: ["s", "s"],
+    isActive: false,
+    items: [],
+  },
+  {
     title: "Empresas",
     url: "/empresas",
     icon: "companies",

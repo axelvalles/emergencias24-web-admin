@@ -86,7 +86,7 @@ export default function TicketViewPage() {
               <ButtonComplete ticketId={ticket.id} />
             )}
 
-            {ticket.status !== TicketStatus.CANCELLED &&
+            {ticket.status !== TicketStatus.CANCELED &&
               ticket.status !== TicketStatus.COMPLETED && (
                 <ButtonCancel ticketId={ticket.id} />
               )}

@@ -28,6 +28,12 @@ export default [
       route("/editar/:id", "./routes/_auth/plans/edit.tsx"),
     ]),
 
+    ...prefix("suscripciones", [
+      index("./routes/_auth/plan-subscriptions/plan-subscriptions.tsx"),
+      route("nueva", "./routes/_auth/plan-subscriptions/new.tsx"),
+      route("/editar/:id", "./routes/_auth/plan-subscriptions/edit.tsx"),
+    ]),
+
     ...prefix("empresas", [
       index("./routes/_auth/companies/companies.tsx"),
       route("nueva", "./routes/_auth/companies/new.tsx"),

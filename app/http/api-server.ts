@@ -1,3 +1,5 @@
+import { AxiosError } from "axios";
+
 // Error handling utility
 export function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
@@ -8,6 +10,44 @@ export function getErrorMessage(error: unknown): string {
     return String(error.error);
   }
   return "An unexpected error occurred";
+}
+
+export function parseApiError(error: unknown): ApiError {
+  if (error instanceof AxiosError) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = error.response?.data as any;
+
+    if (data && typeof data === "object") {
+      return {
+        message: Array.isArray(data.message)
+          ? data.message.join(", ")
+          : (data.message ?? "Unexpected error"),
+        errorCode: data.errorCode,
+        statusCode: data.statusCode ?? error.response?.status,
+      };
+    }
+
+    return {
+      message: error.message,
+    };
+  }
+
+  if (error && typeof error === "object" && "message" in error) {
+    return {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      message: String((error as any).message),
+    };
+  }
+
+  return {
+    message: "Unexpected error occurred",
+  };
+}
+
+export interface ApiError {
+  message: string;
+  errorCode?: string;
+  statusCode?: number;
 }
 
 // API Response types
@@ -33,3 +73,4 @@ export { userApi } from "./user-api";
 export { authApi } from "./auth-api";
 export { ticketApi } from "./ticket-api";
 export { planApi } from "./plan-api";
+export { planSubscriptionApi } from "./plan-subscription-api";

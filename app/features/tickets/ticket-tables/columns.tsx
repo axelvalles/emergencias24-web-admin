@@ -65,7 +65,7 @@ const getTicketStatusIcon = (status: TicketStatus) => {
       return RefreshCw;
     case TicketStatus.COMPLETED:
       return CheckCircle;
-    case TicketStatus.CANCELLED:
+    case TicketStatus.CANCELED:
       return XCircle;
     default:
       return Text;
@@ -152,7 +152,7 @@ export const columns: ColumnDef<Ticket>[] = [
           variant = "warning";
           break;
         case TicketStatus.COMPLETED:
-        case TicketStatus.CANCELLED:
+        case TicketStatus.CANCELED:
           variant = "default";
           break;
       }
