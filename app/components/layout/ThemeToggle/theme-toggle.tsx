@@ -41,7 +41,7 @@ export function ModeToggle() {
       ) : (
         <Sun className="h-[1.2rem] w-[1.2rem]" />
       )}
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">Cambiar tema</span>
     </Button>
   );
 }

@@ -6,7 +6,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -26,23 +25,19 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
-  IconBell,
   IconChevronRight,
   IconChevronsDown,
-  IconCreditCard,
   IconLogout,
   IconPhotoUp,
-  IconUserCircle,
 } from "@tabler/icons-react";
-import * as React from "react";
-import { Link, useLocation, useNavigate } from "react-router";
-import { useMediaQuery } from "~/hooks/use-media-query";
+import { Link, useLocation } from "react-router";
 import { Button } from "../ui/button";
 import { useAuthStore } from "~/store/useAuthStore";
 import { navItems } from "./nav-items";
-import { Icons } from "../icons";
+import { Icons, SiameLogo, SiameLogoLarge } from "../icons";
 import { UserAvatarProfile } from "../user-avatar-profile";
 
 export const company = {
@@ -53,32 +48,15 @@ export const company = {
 
 export default function AppSidebar() {
   const { pathname } = useLocation();
-  const { isOpen } = useMediaQuery();
   const { user, logout } = useAuthStore();
-  const navigate = useNavigate();
-
-  // const handleSwitchTenant = (_tenantId: string) => {
-  //   // Tenant switching functionality would be implemented here
-  // };
-
-  // const activeTenant = tenants[0];
-
-  React.useEffect(() => {
-    // Side effects based on sidebar state changes
-  }, [isOpen]);
+  const { open } = useSidebar();
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
-        {/* <OrgSwitcher
-          tenants={tenants}
-          defaultTenant={activeTenant}
-          onTenantSwitch={handleSwitchTenant}
-        /> */}
-      </SidebarHeader>
+      <SidebarHeader>{open ? <SiameLogoLarge /> : <SiameLogo />}</SidebarHeader>
       <SidebarContent className="overflow-x-hidden">
         <SidebarGroup>
-          <SidebarGroupLabel>Overview</SidebarGroupLabel>
+          <SidebarGroupLabel>General</SidebarGroupLabel>
           <SidebarMenu>
             {navItems.map((item) => {
               const Icon = item.icon ? Icons[item.icon] : Icons.logo;
@@ -174,23 +152,6 @@ export default function AppSidebar() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
 
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={() => navigate("/dashboard/profile")}
-                  >
-                    <IconUserCircle className="mr-2 h-4 w-4" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <IconCreditCard className="mr-2 h-4 w-4" />
-                    Billing
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <IconBell className="mr-2 h-4 w-4" />
-                    Notifications
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <IconLogout className="mr-2 h-4 w-4" />
                   <Button
@@ -198,7 +159,7 @@ export default function AppSidebar() {
                       logout();
                     }}
                   >
-                    Sign out
+                    Cerrar sesión
                   </Button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
