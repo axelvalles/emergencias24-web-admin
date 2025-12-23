@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { PatientTable } from "./patient-tables";
 import { columns } from "./patient-tables/columns";
 import { DataTableSkeleton } from "~/components/ui/table/data-table-skeleton";
+import { Button } from "~/components/ui/button";
+import { IconDownload, IconUpload } from "@tabler/icons-react";
 import {
   parseAsInteger,
   parseAsString,
@@ -53,7 +55,7 @@ export default function PatientListingPage() {
     sortOrder,
   };
 
-  const { data, isLoading, error, isFetching } = useQuery({
+  const { data, isLoading, error, isFetching, refetch } = useQuery({
     queryKey: ["patients", filters],
     queryFn: () => patientApi.getAllPatients(filters),
   });
@@ -69,12 +71,79 @@ export default function PatientListingPage() {
     return <DataTableSkeleton columnCount={5} rowCount={8} filterCount={2} />;
   }
 
+  const handleDownloadTemplate = async () => {
+    try {
+      await patientApi.downloadTemplate();
+      toast.success("Plantilla descargada exitosamente");
+    } catch (error) {
+      toast.error("Error al descargar la plantilla");
+    }
+  };
+
+  const handleUploadTemplate = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+      "text/csv",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Solo se permiten archivos .xlsx o .csv");
+      return;
+    }
+
+    // Validate file size (50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("El archivo no puede superar los 50MB");
+      return;
+    }
+
+    try {
+      await patientApi.uploadPatients(file);
+      toast.success("Pacientes importados exitosamente");
+      // Optionally refresh the list
+      refetch();
+    } catch (error) {
+      toast.error("Error al importar pacientes");
+    }
+  };
+
+  const triggerFileInput = () => {
+    const input = document.getElementById(
+      "patient-import-input"
+    ) as HTMLInputElement;
+    input?.click();
+  };
+
   return (
-    <PatientTable
-      data={patients}
-      totalItems={totalItems}
-      columns={columns}
-      isFetching={isFetching}
-    />
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <Button onClick={handleDownloadTemplate} variant="outline">
+          <IconDownload className="w-4 h-4" />
+          Descargar Plantilla
+        </Button>
+        <Button onClick={triggerFileInput} variant="outline">
+          <IconUpload className="w-4 h-4" />
+          Cargar Plantilla
+        </Button>
+        <input
+          id="patient-import-input"
+          type="file"
+          accept=".xlsx,.csv"
+          onChange={handleUploadTemplate}
+          style={{ display: "none" }}
+        />
+      </div>
+      <PatientTable
+        data={patients}
+        totalItems={totalItems}
+        columns={columns}
+        isFetching={isFetching}
+      />
+    </div>
   );
 }

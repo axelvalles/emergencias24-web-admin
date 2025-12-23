@@ -25,7 +25,6 @@ export enum DocumentType {
   CC = "CC",
   CE = "CE",
   PASSPORT = "PASSPORT",
-  NIT = "NIT",
   OTHER = "OTHER",
 }
 
@@ -138,6 +137,5 @@ export const DocumentTypeLabels = {
   [DocumentType.CC]: "Cédula de ciudadanía",
   [DocumentType.CE]: "Cédula de extranjería",
   [DocumentType.PASSPORT]: "Pasaporte",
-  [DocumentType.NIT]: "NIT",
   [DocumentType.OTHER]: "Otro",
 };
