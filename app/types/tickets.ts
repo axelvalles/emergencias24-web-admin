@@ -1,3 +1,6 @@
+import type { PatientDetail } from "./patients";
+import type { User } from "./users";
+
 export enum TicketType {
   IMMEDIATE_ATTENTION = "immediate_attention",
   TELEMEDICINE = "telemedicine",
@@ -6,6 +9,8 @@ export enum TicketType {
   LABORATORY = "laboratory",
   AMBULANCE = "ambulance",
   EQUIPMENT_RENTAL = "equipment_rental",
+  APPOINTMENT = "appointment",
+  PLANS = "plans",
 }
 
 export const TicketTypeLabels = {
@@ -16,6 +21,8 @@ export const TicketTypeLabels = {
   [TicketType.LABORATORY]: "Laboratorio",
   [TicketType.AMBULANCE]: "Ambulancia",
   [TicketType.EQUIPMENT_RENTAL]: "Alquiler de equipo",
+  [TicketType.APPOINTMENT]: "Cita",
+  [TicketType.PLANS]: "Planes",
 };
 
 export enum TicketStatus {
@@ -23,7 +30,7 @@ export enum TicketStatus {
   ASSIGNED = "assigned",
   IN_PROGRESS = "in_progress",
   COMPLETED = "completed",
-  CANCELLED = "cancelled",
+  CANCELED = "CANCELED",
 }
 
 export const TicketStatusLabels = {
@@ -31,21 +38,19 @@ export const TicketStatusLabels = {
   [TicketStatus.ASSIGNED]: "Asignado",
   [TicketStatus.IN_PROGRESS]: "En Proceso",
   [TicketStatus.COMPLETED]: "Completado",
-  [TicketStatus.CANCELLED]: "Cancelado",
+  [TicketStatus.CANCELED]: "Cancelado",
 };
 
 export enum TicketPriority {
   LOW = "low",
   MEDIUM = "medium",
   HIGH = "high",
-  URGENT = "urgent",
 }
 
 export const TicketPriorityLabels = {
   [TicketPriority.LOW]: "Baja",
   [TicketPriority.MEDIUM]: "Media",
   [TicketPriority.HIGH]: "Alta",
-  [TicketPriority.URGENT]: "Urgente",
 };
 
 export interface Ticket {
@@ -54,26 +59,29 @@ export interface Ticket {
   serviceType: TicketType;
   status: TicketStatus;
   priority: TicketPriority;
-  patientId: null | string;
+  patient: PatientDetail | null;
   requesterPhone: string;
   requesterName: string;
   location: string;
-  municipality: string;
+  municipality: string | null;
+  speciality: string | null;
   description: string;
-  additionalNotes: string | null;
-  assignedTo: string | null;
-  assignedAt: string | null;
-  completedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
+  note: string | null;
+  cancellationReason: string;
+  assignedUser: User | null;
+  assignedAt: Date | null;
+  completedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // types server
 export interface QueryTicketsParams {
-  serviceType?: TicketType;
-  status?: TicketStatus;
+  serviceType?: TicketType[];
+  status?: TicketStatus[];
   priority?: TicketPriority;
   requesterPhone?: string;
+  requesterName?: string;
   municipality?: string;
   assignedTo?: string;
   referenceNumber?: number;
@@ -83,4 +91,15 @@ export interface QueryTicketsParams {
   limit?: number;
   sortBy?: string;
   sortOrder?: "ASC" | "DESC";
+}
+
+export interface TicketStatusHistory {
+  id: string;
+  status: TicketStatus;
+  changedBy?: {
+    id: string;
+    fullName: string;
+  } | null;
+  comment?: string;
+  createdAt: string;
 }

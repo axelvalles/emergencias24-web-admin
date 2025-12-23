@@ -61,7 +61,10 @@ class HttpClient {
 
   async get<T>(
     endpoint: string,
-    params?: Record<string, string | number | boolean>
+    params?: Record<
+      string,
+      string | number | boolean | Array<string | number | boolean>
+    >
   ): Promise<T> {
     return this.request<T>(endpoint, {
       method: "GET",

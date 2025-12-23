@@ -1,4 +1,4 @@
-import { Separator } from "@radix-ui/react-select";
+import { Separator } from "~/components/ui/separator";
 import PageContainer from "~/components/layout/page-container";
 import { Heading } from "~/components/ui/heading";
 import TicketListingPage from "~/features/tickets/ticket-listing";

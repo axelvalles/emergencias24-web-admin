@@ -78,7 +78,7 @@ export function DataTableColumnHeader<TData, TValue>({
                 onClick={() => column.clearSorting()}
               >
                 <Cross2Icon />
-                Reset
+                Reiniciar
               </DropdownMenuItem>
             )}
           </>
@@ -90,7 +90,7 @@ export function DataTableColumnHeader<TData, TValue>({
             onClick={() => column.toggleVisibility(false)}
           >
             <EyeOff />
-            Hide
+            Ocultar
           </DropdownMenuCheckboxItem>
         )}
       </DropdownMenuContent>

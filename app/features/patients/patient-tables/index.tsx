@@ -10,11 +10,13 @@ interface PatientTableParams<TData, TValue> {
   data: TData[];
   totalItems: number;
   columns: ColumnDef<TData, TValue>[];
+  isFetching: boolean;
 }
 export function PatientTable<TData, TValue>({
   data = [],
   totalItems = 0,
   columns,
+  isFetching,
 }: PatientTableParams<TData, TValue>) {
   const [pageSize] = useQueryState("perPage", parseAsInteger.withDefault(10));
 
@@ -29,7 +31,7 @@ export function PatientTable<TData, TValue>({
   });
 
   return (
-    <DataTable table={table}>
+    <DataTable isFetching={isFetching} table={table}>
       <DataTableToolbar table={table} />
     </DataTable>
   );

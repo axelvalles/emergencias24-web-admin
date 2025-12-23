@@ -13,40 +13,20 @@ import {
   TicketTypeLabels,
   TicketStatusLabels,
   TicketPriorityLabels,
+  TicketPriority,
 } from "~/types/tickets";
 import { LocationDisplay } from "~/components/map/location-display";
 import PatientInfoCard from "~/features/tickets/patient-info-card";
-import ButtonComplete from "~/features/tickets/button-complete";
+import ButtonAssign from "~/features/tickets/button-assign";
+import ButtonStart from "~/features/tickets/button-start";
 import ButtonCancel from "~/features/tickets/button-cancel";
+import ButtonComplete from "~/features/tickets/button-complete";
+import TicketHistoryTimeline from "~/features/tickets/ticket-history-timeline";
+import { isValidCoordinates } from "~/lib/validate-coordinates";
+import { format } from "date-fns";
 
-// Helper function to check if location is valid coordinates
-function isValidCoordinates(location: string): boolean {
-  if (!location) {
-    return false;
-  }
-
-  const coordRegex = /^(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)$/;
-  const match = location.match(coordRegex);
-
-  if (match) {
-    const lat = parseFloat(match[1]);
-    const lng = parseFloat(match[3]);
-
-    // Validate coordinate ranges
-    return lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
-  }
-
-  return false;
-}
-
-interface TicketViewPageProps {
-  isReferenceNumber?: boolean;
-}
-
-export default function TicketViewPage({
-  isReferenceNumber = false,
-}: TicketViewPageProps) {
-  const { id } = useParams();
+export default function TicketViewPage() {
+  const { referenceNumber } = useParams();
   const navigate = useNavigate();
 
   const {
@@ -54,12 +34,10 @@ export default function TicketViewPage({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["ticket", id, isReferenceNumber],
-    queryFn: () =>
-      isReferenceNumber
-        ? ticketApi.getTicketByReference(Number(id))
-        : ticketApi.getTicketById(id!),
+    queryKey: ["ticket-by-reference", referenceNumber],
+    queryFn: () => ticketApi.getTicketByReference(Number(referenceNumber)),
   });
+  console.log(ticket);
 
   if (error) {
     toast.error("Error al cargar el ticket");
@@ -87,17 +65,32 @@ export default function TicketViewPage({
                 Ticket #{ticket.referenceNumber}
               </h1>
               <p className="text-muted-foreground">
-                Creado el {new Date(ticket.createdAt).toLocaleDateString()}
+                Creado el {format(ticket.createdAt, "dd/MM/yyyy hh:mm a")}
               </p>
             </div>
           </div>
-          {ticket.status !== TicketStatus.COMPLETED &&
-            ticket.status !== TicketStatus.CANCELLED && (
-              <div className="flex flex-wrap gap-2">
-                <ButtonComplete ticketId={id!} />
-                <ButtonCancel ticketId={id!} />
-              </div>
+          <div className="flex items-center gap-2">
+            {(ticket.status === TicketStatus.PENDING ||
+              ticket.status === TicketStatus.ASSIGNED) && (
+              <ButtonAssign
+                ticketId={ticket.id}
+                text={ticket.assignedAt && "Reasignar"}
+              />
             )}
+
+            {ticket.status === TicketStatus.ASSIGNED && (
+              <ButtonStart ticketId={ticket.id} />
+            )}
+
+            {ticket.status === TicketStatus.IN_PROGRESS && (
+              <ButtonComplete ticketId={ticket.id} />
+            )}
+
+            {ticket.status !== TicketStatus.CANCELED &&
+              ticket.status !== TicketStatus.COMPLETED && (
+                <ButtonCancel ticketId={ticket.id} />
+              )}
+          </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -142,11 +135,13 @@ export default function TicketViewPage({
                 <label className="text-sm font-medium">Estado: </label>
                 <Badge
                   variant={
-                    ticket.status === "pending"
+                    ticket.status === TicketStatus.PENDING
                       ? "destructive"
-                      : ticket.status === "completed"
-                        ? "default"
-                        : "secondary"
+                      : ticket.status === TicketStatus.IN_PROGRESS
+                        ? "orange"
+                        : ticket.status === TicketStatus.ASSIGNED
+                          ? "warning"
+                          : "default"
                   }
                 >
                   {TicketStatusLabels[ticket.status]}
@@ -156,16 +151,24 @@ export default function TicketViewPage({
                 <label className="text-sm font-medium">Prioridad: </label>
                 <Badge
                   variant={
-                    ticket.priority === "urgent"
+                    ticket.priority === TicketPriority.HIGH
                       ? "destructive"
-                      : ticket.priority === "high"
-                        ? "destructive"
-                        : "secondary"
+                      : ticket.priority === TicketPriority.MEDIUM
+                        ? "orange"
+                        : "success"
                   }
                 >
                   {TicketPriorityLabels[ticket.priority]}
                 </Badge>
               </div>
+
+              {ticket.cancellationReason && (
+                <div>
+                  <label className="text-sm font-medium">
+                    Motivo de cancelación: {ticket.cancellationReason}
+                  </label>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -177,44 +180,18 @@ export default function TicketViewPage({
             </CardHeader>
             <CardContent>
               <LocationDisplay location={ticket.location} className="w-full" />
-              <p className="text-sm text-muted-foreground mt-2">
-                Municipio: {ticket.municipality}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {ticket.patientId && <PatientInfoCard patientId={ticket.patientId} />}
-
-        {ticket.assignedTo && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Asignación</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div>
-                <label className="text-sm font-medium">Asignado a:</label>
-                <p>{ticket.assignedTo}</p>
-              </div>
-              {ticket.assignedAt && (
-                <div>
-                  <label className="text-sm font-medium">
-                    Fecha de asignación:
-                  </label>
-                  <p>{new Date(ticket.assignedAt).toLocaleDateString()}</p>
-                </div>
-              )}
-              {ticket.completedAt && (
-                <div>
-                  <label className="text-sm font-medium">
-                    Fecha de completado:
-                  </label>
-                  <p>{new Date(ticket.completedAt).toLocaleDateString()}</p>
-                </div>
+              {ticket.municipality && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Municipio: {ticket.municipality}
+                </p>
               )}
             </CardContent>
           </Card>
         )}
+
+        {ticket.patient && <PatientInfoCard patient={ticket.patient} />}
+
+        <TicketHistoryTimeline ticketId={ticket.id} />
       </div>
     </PageContainer>
   );

@@ -2,48 +2,75 @@ import { DataTableColumnHeader } from "~/components/ui/table/data-table-column-h
 import type { Column, ColumnDef } from "@tanstack/react-table";
 import { Text } from "lucide-react";
 import { CellAction } from "./cell-action";
-import { AvatarNext } from "~/components/ui/avatar";
-import type { Patient } from "~/http/patient-api";
+import { PatientStatusLabels, type Patient } from "~/types/patients";
+import { Badge } from "~/components/ui/badge";
 
 export const columns: ColumnDef<Patient>[] = [
   {
-    id: "first_name",
-    accessorKey: "first_name",
+    id: "documentNumber",
+    accessorKey: "documentNumber",
     header: ({ column }: { column: Column<Patient, unknown> }) => (
-      <DataTableColumnHeader column={column} title="Name" />
+      <DataTableColumnHeader column={column} title="Documento" />
     ),
-    cell: ({ cell }) => <div>{cell.getValue<Patient["first_name"]>()}</div>,
+    cell: ({ cell }) => <div>{cell.getValue<Patient["documentNumber"]>()}</div>,
     meta: {
-      label: "Name",
-      placeholder: "Search patients...",
+      label: "Documento",
+      placeholder: "Buscar...",
       variant: "text",
       icon: Text,
     },
     enableColumnFilter: true,
   },
   {
-    id: "last_name",
-    accessorKey: "last_name",
+    id: "fullName",
+    accessorKey: "fullName",
     header: ({ column }: { column: Column<Patient, unknown> }) => (
-      <DataTableColumnHeader column={column} title="last_name" />
+      <DataTableColumnHeader column={column} title="Nombre" />
     ),
-    cell: ({ cell }) => <div>{cell.getValue<Patient["last_name"]>()}</div>,
+    cell: ({ cell }) => <div>{cell.getValue<Patient["fullName"]>()}</div>,
+    meta: {
+      label: "Nombre",
+      placeholder: "Buscar...",
+      variant: "text",
+      icon: Text,
+    },
+    enableColumnFilter: true,
   },
   {
-    id: "phone",
-    accessorKey: "phone",
+    id: "birthDate",
+    accessorKey: "birthDate",
     header: ({ column }: { column: Column<Patient, unknown> }) => (
-      <DataTableColumnHeader column={column} title="Phone" />
+      <DataTableColumnHeader column={column} title="Fecha de nacimiento" />
     ),
-    cell: ({ cell }) => <div>{cell.getValue<Patient["phone"]>()}</div>,
+    cell: ({ cell }) => <div>{cell.getValue<Patient["birthDate"]>()}</div>,
   },
   {
-    id: "birth_date",
-    accessorKey: "birth_date",
+    id: "status",
+    accessorKey: "status",
     header: ({ column }: { column: Column<Patient, unknown> }) => (
-      <DataTableColumnHeader column={column} title="Date of Birth" />
+      <DataTableColumnHeader column={column} title="Estado" />
     ),
-    cell: ({ cell }) => <div>{cell.getValue<Patient["birth_date"]>()}</div>,
+    cell: ({ cell }) => {
+      const status = cell.getValue<Patient["status"]>();
+      const label = PatientStatusLabels[status];
+      let variant: "default" | "secondary" | "destructive" | "outline" =
+        "default";
+
+      if (status === "Inactive") variant = "secondary";
+      if (status === "Deceased") variant = "destructive";
+
+      return <Badge variant={variant}>{label}</Badge>;
+    },
+    meta: {
+      label: "Estado",
+      placeholder: "Seleccionar...",
+      variant: "multiSelect",
+      options: Object.entries(PatientStatusLabels).map(([value, label]) => ({
+        label,
+        value,
+      })),
+    },
+    enableColumnFilter: true,
   },
   {
     id: "actions",

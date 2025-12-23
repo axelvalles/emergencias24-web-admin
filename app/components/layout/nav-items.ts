@@ -45,17 +45,49 @@ export const navItems: NavItem[] = [
   },
   {
     title: "Pacientes",
-    url: "/patients",
+    url: "/pacientes",
     icon: "patient",
     shortcut: ["p", "p"],
     isActive: false,
     items: [], // No child items
   },
   {
+    title: "Planes",
+    url: "/planes",
+    icon: "plans",
+    shortcut: ["l", "l"],
+    isActive: false,
+    items: [],
+  },
+  {
+    title: "Suscripciones",
+    url: "/suscripciones",
+    icon: "subscriptions",
+    shortcut: ["s", "s"],
+    isActive: false,
+    items: [],
+  },
+  {
+    title: "Empresas",
+    url: "/empresas",
+    icon: "companies",
+    shortcut: ["c", "c"],
+    isActive: false,
+    items: [],
+  },
+  {
     title: "Tickets",
     url: "/tickets",
     icon: "ticket",
     shortcut: ["t", "t"],
+    isActive: false,
+    items: [], // No child items
+  },
+  {
+    title: "Usuarios",
+    url: "/usuarios",
+    icon: "users",
+    shortcut: ["u", "u"],
     isActive: false,
     items: [], // No child items
   },
