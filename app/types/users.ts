@@ -1,24 +1,12 @@
 // User Management Interfaces
 export enum UserRole {
-  SUPER_ADMIN = "superAdmin",
-  CLINIC_ADMIN = "clinicAdmin",
+  ADMIN = "admin",
   OPERATOR = "operator",
-  DOCTOR = "doctor",
-  NURSE = "nurse",
-  RECEPTIONIST = "receptionist",
-  LABADMIN = "labAdmin",
-  FINANCE = "finance",
 }
 
 export const UserRoleLabels = {
-  [UserRole.SUPER_ADMIN]: "Super administrador",
-  [UserRole.CLINIC_ADMIN]: "Administrador de clínica",
+  [UserRole.ADMIN]: "Administrador",
   [UserRole.OPERATOR]: "Operador",
-  [UserRole.DOCTOR]: "Doctor",
-  [UserRole.NURSE]: "Enfermero/a",
-  [UserRole.RECEPTIONIST]: "Recepcionista",
-  [UserRole.LABADMIN]: "Administrador de laboratorio",
-  [UserRole.FINANCE]: "Finanzas",
 } as const;
 
 export enum UserStatus {
