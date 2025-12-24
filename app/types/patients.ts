@@ -64,6 +64,7 @@ export interface PatientDetail {
   bloodType: BloodType;
   allergies: string;
   medicalConditions: string;
+  companyId?: string;
   patientStatus: PatientStatus;
   medicalRecordNumber: null;
   createdAt: string;
@@ -86,6 +87,9 @@ export interface CreatePatientDTO {
   secondaryPhone?: string;
   emergencyContactName?: string;
   emergencyContactPhone?: string;
+  allergies?: string;
+  medicalConditions?: string;
+  companyId?: string;
 }
 
 export interface UpdatePatientDTO {
@@ -108,6 +112,7 @@ export interface UpdatePatientDTO {
   medicalConditions?: string;
   patientStatus?: string;
   medicalRecordNumber?: string;
+  companyId?: string;
 }
 
 export const GenderLabels = {

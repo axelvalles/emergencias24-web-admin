@@ -84,6 +84,10 @@ export const patientFormSchema = z.object({
     .max(500, { message: "Máximo 500 caracteres" })
     .optional()
     .or(z.literal("")),
+  companyId: z
+    .string()
+    .optional()
+    .or(z.literal("")),
 });
 
 export type PatientFormSchema = z.infer<typeof patientFormSchema>;

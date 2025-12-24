@@ -9,8 +9,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { LoadingButton } from "~/components/ui/loading-button";
 import { parseAsInteger, useQueryState } from "nuqs";
-import { useMutation } from "@tanstack/react-query";
-import { patientApi, getErrorMessage } from "~/http/api-server";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { patientApi, companyApi, getErrorMessage } from "~/http/api-server";
 import { patientFormSchema, type PatientFormSchema } from "./schemas";
 import {
   DocumentTypeLabels,
@@ -19,6 +19,7 @@ import {
   Gender,
   DocumentType,
 } from "~/types/patients";
+import type { Company } from "~/types/companies";
 import { FormTextarea } from "~/components/forms/form-textarea";
 import { queryClient } from "~/lib/query-client";
 
@@ -47,6 +48,16 @@ export default function PatientForm({
   const [pageSize] = useQueryState("perPage", parseAsInteger.withDefault(10));
 
   const navigate = useNavigate();
+
+  const { data: companies } = useQuery({
+    queryKey: ["companies"],
+    queryFn: () => companyApi.getAllCompanies(),
+  });
+
+  const companyOptions: FormOption[] = companies?.data?.map((company: Company) => ({
+    value: company.id,
+    label: company.name,
+  })) || [];
 
   const createMutation = useMutation({
     mutationFn: async (data: PatientFormSchema) => {
@@ -107,6 +118,7 @@ export default function PatientForm({
       emergencyContactPhone: initialData?.emergencyContactPhone || "",
       allergies: initialData?.allergies || "",
       medicalConditions: initialData?.medicalConditions || "",
+      companyId: initialData?.companyId || "",
     },
   });
 
@@ -171,6 +183,14 @@ export default function PatientForm({
                 label="Género"
                 options={genderOptions}
                 required
+              />
+              <FormSelect
+                disabled={isExecuting}
+                control={form.control}
+                name="companyId"
+                label="Empresa"
+                options={companyOptions}
+                placeholder="Seleccione una empresa (opcional)"
               />
               <FormInput
                 disabled={isExecuting}

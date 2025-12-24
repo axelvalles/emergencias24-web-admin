@@ -24,10 +24,14 @@ const planTypeOptions: FormOption[] = Object.entries(PlanTypeLabels).map(
 );
 
 const defaultBenefits = {
-  consultations: false,
-  emergencyCoverage: false,
-  dental: false,
-  optometry: false,
+  telemedicine: false,
+  medicationDelivery: false,
+  ambulanceTransfer: false,
+  homeCare: false,
+  workplaceCare: false,
+  emergencyRoom: false,
+  specializedConsultations: false,
+  labTests: false,
   notes: "",
 } satisfies PlanFormSchema["benefits"];
 
@@ -36,15 +40,17 @@ const getDefaultValues = (initialData: PlanDetail | null): PlanFormSchema => ({
   description: initialData?.description ?? "",
   planType: initialData?.planType ?? PlanType.FAMILY,
   benefits: {
-    consultations: initialData?.benefits?.consultations ?? defaultBenefits.consultations,
-    emergencyCoverage:
-      initialData?.benefits?.emergencyCoverage ?? defaultBenefits.emergencyCoverage,
-    dental: initialData?.benefits?.dental ?? defaultBenefits.dental,
-    optometry:
-      initialData?.benefits?.optometry ?? defaultBenefits.optometry,
+    telemedicine: initialData?.benefits?.telemedicine ?? defaultBenefits.telemedicine,
+    medicationDelivery: initialData?.benefits?.medicationDelivery ?? defaultBenefits.medicationDelivery,
+    ambulanceTransfer: initialData?.benefits?.ambulanceTransfer ?? defaultBenefits.ambulanceTransfer,
+    homeCare: initialData?.benefits?.homeCare ?? defaultBenefits.homeCare,
+    workplaceCare: initialData?.benefits?.workplaceCare ?? defaultBenefits.workplaceCare,
+    emergencyRoom: initialData?.benefits?.emergencyRoom ?? defaultBenefits.emergencyRoom,
+    specializedConsultations: initialData?.benefits?.specializedConsultations ?? defaultBenefits.specializedConsultations,
+    labTests: initialData?.benefits?.labTests ?? defaultBenefits.labTests,
     notes: initialData?.benefits?.notes ?? defaultBenefits.notes,
   },
-  monthlyCost: initialData?.monthlyCost ?? undefined,
+  monthlyCost: initialData?.monthlyCost?.toString() ?? "",
 });
 
 const buildCreatePayload = (values: PlanFormSchema) => {
@@ -52,10 +58,14 @@ const buildCreatePayload = (values: PlanFormSchema) => {
     name: values.name.trim(),
     planType: values.planType,
     benefits: {
-      consultations: values.benefits.consultations,
-      emergencyCoverage: values.benefits.emergencyCoverage,
-      dental: values.benefits.dental,
-      optometry: values.benefits.optometry,
+      telemedicine: values.benefits.telemedicine,
+      medicationDelivery: values.benefits.medicationDelivery,
+      ambulanceTransfer: values.benefits.ambulanceTransfer,
+      homeCare: values.benefits.homeCare,
+      workplaceCare: values.benefits.workplaceCare,
+      emergencyRoom: values.benefits.emergencyRoom,
+      specializedConsultations: values.benefits.specializedConsultations,
+      labTests: values.benefits.labTests,
       ...(values.benefits.notes && values.benefits.notes.trim().length > 0
         ? { notes: values.benefits.notes.trim() }
         : {}),
@@ -63,8 +73,8 @@ const buildCreatePayload = (values: PlanFormSchema) => {
     ...(values.description && values.description.trim().length > 0
       ? { description: values.description.trim() }
       : {}),
-    ...(typeof values.monthlyCost === "number"
-      ? { monthlyCost: values.monthlyCost }
+    ...(values.monthlyCost && values.monthlyCost.trim().length > 0
+      ? { monthlyCost: values.monthlyCost.trim() }
       : {}),
   } satisfies Parameters<typeof planApi.createPlan>[0];
 
@@ -74,6 +84,17 @@ const buildCreatePayload = (values: PlanFormSchema) => {
 const buildUpdatePayload = (values: PlanFormSchema) => ({
   ...buildCreatePayload(values),
 }) satisfies Parameters<typeof planApi.updatePlan>[1];
+
+const handleMonthlyCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  let value = e.target.value.replace(/[^0-9.]/g, '');
+  const dotIndex = value.indexOf('.');
+  if (dotIndex !== -1) {
+    const beforeDot = value.substring(0, dotIndex + 1);
+    const afterDot = value.substring(dotIndex + 1).replace(/\./g, '');
+    value = beforeDot + afterDot;
+  }
+  e.target.value = value;
+};
 
 interface PlanFormProps {
   initialData: PlanDetail | null;
@@ -162,10 +183,9 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
                 control={form.control}
                 name="monthlyCost"
                 label="Costo mensual"
-                type="number"
-                step="0.01"
-                min={0}
+                type="text"
                 disabled={isExecuting}
+                onChange={handleMonthlyCostChange}
               />
               <FormTextarea
                 control={form.control}
@@ -187,29 +207,57 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormSwitch
                   control={form.control}
-                  name="benefits.consultations"
-                  label="Consultas incluidas"
+                  name="benefits.telemedicine"
+                  label="Telemedicina"
                   disabled={isExecuting}
                   showDescription={false}
                 />
                 <FormSwitch
                   control={form.control}
-                  name="benefits.emergencyCoverage"
-                  label="Cobertura de emergencias"
+                  name="benefits.medicationDelivery"
+                  label="Entrega de medicamentos"
                   disabled={isExecuting}
                   showDescription={false}
                 />
                 <FormSwitch
                   control={form.control}
-                  name="benefits.dental"
-                  label="Cobertura dental"
+                  name="benefits.ambulanceTransfer"
+                  label="Traslado en ambulancia"
                   disabled={isExecuting}
                   showDescription={false}
                 />
                 <FormSwitch
                   control={form.control}
-                  name="benefits.optometry"
-                  label="Optometría"
+                  name="benefits.homeCare"
+                  label="Cuidado en casa"
+                  disabled={isExecuting}
+                  showDescription={false}
+                />
+                <FormSwitch
+                  control={form.control}
+                  name="benefits.workplaceCare"
+                  label="Cuidado en el trabajo"
+                  disabled={isExecuting}
+                  showDescription={false}
+                />
+                <FormSwitch
+                  control={form.control}
+                  name="benefits.emergencyRoom"
+                  label="Sala de emergencias"
+                  disabled={isExecuting}
+                  showDescription={false}
+                />
+                <FormSwitch
+                  control={form.control}
+                  name="benefits.specializedConsultations"
+                  label="Consultas especializadas"
+                  disabled={isExecuting}
+                  showDescription={false}
+                />
+                <FormSwitch
+                  control={form.control}
+                  name="benefits.labTests"
+                  label="Pruebas de laboratorio"
                   disabled={isExecuting}
                   showDescription={false}
                 />

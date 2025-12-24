@@ -74,3 +74,4 @@ export { authApi } from "./auth-api";
 export { ticketApi } from "./ticket-api";
 export { planApi } from "./plan-api";
 export { planSubscriptionApi } from "./plan-subscription-api";
+export { companyApi } from "./company-api";

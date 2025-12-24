@@ -21,6 +21,7 @@ interface FormInputProps<
   step?: string | number;
   min?: string | number;
   max?: string | number;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 function FormInput<
@@ -39,6 +40,7 @@ function FormInput<
   max,
   disabled,
   className,
+  onChange,
 }: FormInputProps<TFieldValues, TName>) {
   return (
     <FormField
@@ -62,6 +64,7 @@ function FormInput<
               disabled={disabled}
               {...field}
               onChange={(e) => {
+                if (onChange) onChange(e);
                 if (type === "number") {
                   const value = e.target.value;
                   field.onChange(value === "" ? undefined : parseFloat(value));

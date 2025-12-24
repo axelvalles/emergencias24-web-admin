@@ -2,10 +2,14 @@ import { z } from "zod";
 import { PlanType } from "~/types/plans";
 
 const benefitsSchema = z.object({
-  consultations: z.boolean(),
-  emergencyCoverage: z.boolean(),
-  dental: z.boolean(),
-  optometry: z.boolean(),
+  telemedicine: z.boolean(),
+  medicationDelivery: z.boolean(),
+  ambulanceTransfer: z.boolean(),
+  homeCare: z.boolean(),
+  workplaceCare: z.boolean(),
+  emergencyRoom: z.boolean(),
+  specializedConsultations: z.boolean(),
+  labTests: z.boolean(),
   notes: z
     .string()
     .trim()
@@ -27,8 +31,8 @@ export const planFormSchema = z.object({
   planType: z.enum(PlanType),
   benefits: benefitsSchema,
   monthlyCost: z
-    .number()
-    .min(0, { message: "Debe ser mayor o igual a 0" })
+    .string()
+    .regex(/^\d+(\.\d{1,2})?$/, { message: "Debe ser un número decimal válido (ej: 123.45)" })
     .optional(),
 });
 

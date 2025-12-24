@@ -21,10 +21,14 @@ export const PlanStatusLabels: Record<PlanStatus, string> = {
 };
 
 export interface PlanBenefits {
-  consultations: boolean;
-  emergencyCoverage: boolean;
-  dental: boolean;
-  optometry?: boolean;
+  telemedicine: boolean;
+  medicationDelivery: boolean;
+  ambulanceTransfer: boolean;
+  homeCare: boolean;
+  workplaceCare: boolean;
+  emergencyRoom: boolean;
+  specializedConsultations: boolean;
+  labTests: boolean;
   notes?: string;
 }
 
@@ -48,7 +52,7 @@ export interface CreatePlanDTO {
   planType: PlanType;
   benefits: PlanBenefits;
   status?: PlanStatus;
-  monthlyCost?: number;
+  monthlyCost?: string;
 }
 
 export type UpdatePlanDTO = Partial<CreatePlanDTO>;
