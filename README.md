@@ -1,87 +1,56 @@
-# Welcome to React Router!
+# Emergencias24 Web Admin
 
-A modern, production-ready template for building full-stack React applications using React Router.
+![Demo App](./Emergencias24AdminDemo.gif)
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## Descripción del Proyecto
 
-## Features
+Emergencias24 Web Admin es una plataforma integral para la gestión y monitoreo de emergencias. Esta aplicación permite a los administradores y operadores visualizar incidentes en tiempo real, gestionar recursos y coordinar acciones de respuesta de manera eficiente.
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Tecnologías Utilizadas
 
-## Getting Started
+El proyecto utiliza un stack tecnológico moderno y optimizado para el rendimiento:
 
-### Installation
+- **Frontend Core**: [React 19](https://react.dev/) & [React Router 7](https://reactrouter.com/)
+- **Lenguaje**: [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Estilos & UI**:
+  - [TailwindCSS](https://tailwindcss.com/)
+  - [Radix UI](https://www.radix-ui.com/) (Componentes accesibles)
+  - [Lucide React](https://lucide.dev/) (Iconos)
+- **Gestión de Estado & Datos**:
+  - [Zustand](https://github.com/pmndrs/zustand) (Estado global)
+  - [TanStack Query](https://tanstack.com/query/latest) (Server state)
+- **Tablas y Listas**: [TanStack Table](https://tanstack.com/table/latest)
+- **Mapas**: [Leaflet](https://leafletjs.com/) con [React Leaflet](https://react-leaflet.js.org/)
+- **Comunicación en Tiempo Real**: [Socket.io Client](https://socket.io/)
+- **Formularios y Validación**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
 
-Install the dependencies:
+---
+
+## Comenzando
+
+### Instalación
+
+Instala las dependencias:
 
 ```bash
 npm install
 ```
 
-### Development
+### Desarrollo
 
-Start the development server with HMR:
+Inicia el servidor de desarrollo con HMR:
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Tu aplicación estará disponible en `http://localhost:5173`.
 
-## Building for Production
+## Construcción para Producción
 
-Create a production build:
+Crea una build de producción:
 
 ```bash
 npm run build
 ```
-
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
