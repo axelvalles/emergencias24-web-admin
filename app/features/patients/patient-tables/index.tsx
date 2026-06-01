@@ -11,12 +11,16 @@ interface PatientTableParams<TData, TValue> {
   totalItems: number;
   columns: ColumnDef<TData, TValue>[];
   isFetching: boolean;
+  globalSearch: string;
+  onGlobalSearchChange: (value: string) => void;
 }
 export function PatientTable<TData, TValue>({
   data = [],
   totalItems = 0,
   columns,
   isFetching,
+  globalSearch,
+  onGlobalSearchChange,
 }: PatientTableParams<TData, TValue>) {
   const [pageSize] = useQueryState("perPage", parseAsInteger.withDefault(10));
 
@@ -32,7 +36,15 @@ export function PatientTable<TData, TValue>({
 
   return (
     <DataTable isFetching={isFetching} table={table}>
-      <DataTableToolbar table={table} />
+      <DataTableToolbar
+        table={table}
+        globalSearch={{
+          value: globalSearch,
+          onChange: onGlobalSearchChange,
+          placeholder: "Buscar por nombre, documento o telefono...",
+          label: "Busqueda",
+        }}
+      />
     </DataTable>
   );
 }

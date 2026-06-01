@@ -16,6 +16,7 @@ export const patientApi = {
   getAllPatients: async (params?: {
     page?: number;
     limit?: number;
+    q?: string;
     fullName?: string;
     documentNumber?: string;
     patientStatus?: string[];

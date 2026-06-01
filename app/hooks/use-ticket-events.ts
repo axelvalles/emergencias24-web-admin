@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { queryClient } from "~/lib/query-client";
 import { socket } from "~/lib/socket"; // conexión Socket.IO ya configurada
+import { useAuthStore } from "~/store/useAuthStore";
 import { useTicketStore } from "~/store/useTicketStore";
 import { TicketTypeLabels, type Ticket } from "~/types/tickets";
 
@@ -12,8 +13,16 @@ type TicketEvent = {
 // Hook que inicializa la suscripción a eventos de tickets
 export function useTicketEvents() {
   const addTicket = useTicketStore((state) => state.addTicket);
+  const token = useAuthStore((state) => state.token);
 
   useEffect(() => {
+    if (!token) {
+      socket.disconnect();
+      return;
+    }
+
+    socket.connect();
+
     console.log("useTicketEvents");
     // Solicita permisos para mostrar notificaciones
     if (Notification.permission !== "granted") {
@@ -64,12 +73,13 @@ export function useTicketEvents() {
 
     // Limpieza al desmontar
     return () => {
+      socket.disconnect();
       socket.off("ticket.created");
       socket.off("ticket.updated");
       socket.off("connect");
       socket.off("disconnect");
     };
-  }, [addTicket]);
+  }, [addTicket, token]);
 }
 
 // Reproduce un sonido de alerta cuando llega un ticket nuevo

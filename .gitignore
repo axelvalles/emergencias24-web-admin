@@ -5,3 +5,7 @@
 # React Router
 /.react-router/
 /build/
+test-results
+.auth
+playwright-report
+.turbo

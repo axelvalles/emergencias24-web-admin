@@ -33,7 +33,8 @@ export const planFormSchema = z.object({
   monthlyCost: z
     .string()
     .regex(/^\d+(\.\d{1,2})?$/, { message: "Debe ser un número decimal válido (ej: 123.45)" })
-    .optional(),
+    .optional()
+    .or(z.literal("")),
 });
 
 export type PlanFormSchema = z.infer<typeof planFormSchema>;

@@ -16,6 +16,10 @@ export const patientFormSchema = z.object({
   gender: z.enum(Gender, {
     error: "El género es obligatorio",
   }),
+  bloodType: z
+    .string()
+    .optional()
+    .or(z.literal("")),
   documentType: z.enum(DocumentType, {
     error: "El tipo de documento es obligatorio",
   }),

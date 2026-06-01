@@ -11,12 +11,16 @@ interface TicketTableParams<TData, TValue> {
   totalItems: number;
   columns: ColumnDef<TData, TValue>[];
   isFetching: boolean;
+  globalSearch: string;
+  onGlobalSearchChange: (value: string) => void;
 }
 export function TicketTable<TData, TValue>({
   data = [],
   totalItems = 0,
   columns,
   isFetching,
+  globalSearch,
+  onGlobalSearchChange,
 }: TicketTableParams<TData, TValue>) {
   const [pageSize] = useQueryState("perPage", parseAsInteger.withDefault(10));
 
@@ -32,7 +36,15 @@ export function TicketTable<TData, TValue>({
 
   return (
     <DataTable table={table} isFetching={isFetching}>
-      <DataTableToolbar table={table} />
+      <DataTableToolbar
+        table={table}
+        globalSearch={{
+          value: globalSearch,
+          onChange: onGlobalSearchChange,
+          placeholder: "Buscar por solicitante, referencia, paciente, telefono...",
+          label: "Busqueda",
+        }}
+      />
     </DataTable>
   );
 }

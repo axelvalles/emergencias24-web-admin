@@ -15,11 +15,9 @@ export const columns: ColumnDef<Patient>[] = [
     cell: ({ cell }) => <div>{cell.getValue<Patient["documentNumber"]>()}</div>,
     meta: {
       label: "Documento",
-      placeholder: "Buscar...",
-      variant: "text",
       icon: Text,
     },
-    enableColumnFilter: true,
+    enableColumnFilter: false,
   },
   {
     id: "fullName",
@@ -30,11 +28,9 @@ export const columns: ColumnDef<Patient>[] = [
     cell: ({ cell }) => <div>{cell.getValue<Patient["fullName"]>()}</div>,
     meta: {
       label: "Nombre",
-      placeholder: "Buscar...",
-      variant: "text",
       icon: Text,
     },
-    enableColumnFilter: true,
+    enableColumnFilter: false,
   },
   {
     id: "birthDate",

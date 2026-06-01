@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
-import type { User } from "~/http/auth-api";
+import type { User } from "~/types/users";
 
 interface UserAvatarProfileProps {
   className?: string;

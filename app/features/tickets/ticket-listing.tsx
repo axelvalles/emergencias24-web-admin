@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { columns } from "./ticket-tables/columns";
 import { DataTableSkeleton } from "~/components/ui/table/data-table-skeleton";
 import { TicketTable } from "./ticket-tables";
+import { useDebouncedCallback } from "~/hooks/use-debounced-callback";
 import {
   parseAsInteger,
   parseAsString,
@@ -37,9 +38,9 @@ const toEnumArray = <T extends string>(
 };
 
 export default function TicketListingPage() {
-  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
-  const [requesterName] = useQueryState("requesterName", parseAsString);
+  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
   const [serviceType] = useQueryState(
     "serviceType",
     parseAsArrayOf(parseAsString)
@@ -50,6 +51,11 @@ export default function TicketListingPage() {
   const [referenceNumber] = useQueryState("referenceNumber", parseAsString);
   const [sort] = useQueryState("sort", parseAsJson(sortSchema));
 
+  const debouncedSetSearch = useDebouncedCallback((value: string) => {
+    void setPage(1);
+    void setSearch(value);
+  }, 400);
+
   const sortBy = sort && sort.length > 0 ? sort[0].id : undefined;
   const sortOrder =
     sort && sort.length > 0 ? (sort[0].desc ? "DESC" : "ASC") : undefined;
@@ -57,7 +63,7 @@ export default function TicketListingPage() {
   const filters: QueryTicketsParams = {
     page,
     limit: pageLimit,
-    requesterName: requesterName || undefined,
+    q: search.trim() || undefined,
     serviceType: toEnumArray(serviceType, Object.values(TicketType)),
     status: toEnumArray(status, Object.values(TicketStatus)),
     priority: (priority as TicketPriority) || undefined,
@@ -89,6 +95,8 @@ export default function TicketListingPage() {
       totalItems={totalItems}
       columns={columns}
       isFetching={isFetching}
+      globalSearch={search}
+      onGlobalSearchChange={debouncedSetSearch}
     />
   );
 }

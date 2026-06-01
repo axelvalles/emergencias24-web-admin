@@ -15,11 +15,9 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ cell }) => <div>{cell.getValue<User["fullName"]>()}</div>,
     meta: {
       label: "Nombre",
-      placeholder: "Buscar...",
-      variant: "text",
       icon: Text,
     },
-    enableColumnFilter: true,
+    enableColumnFilter: false,
   },
   {
     id: "email",
@@ -30,11 +28,9 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ cell }) => <div>{cell.getValue<User["email"]>()}</div>,
     meta: {
       label: "Email",
-      placeholder: "Buscar...",
-      variant: "text",
       icon: Text,
     },
-    enableColumnFilter: true,
+    enableColumnFilter: false,
   },
   {
     id: "phone",
@@ -45,11 +41,9 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ cell }) => <div>{cell.getValue<User["phone"]>()}</div>,
     meta: {
       label: "Telefono",
-      placeholder: "Buscar...",
-      variant: "text",
       icon: Text,
     },
-    enableColumnFilter: true,
+    enableColumnFilter: false,
   },
   {
     id: "role",

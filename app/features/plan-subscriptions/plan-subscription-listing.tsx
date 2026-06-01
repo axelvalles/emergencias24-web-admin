@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 
 import { DataTableSkeleton } from "~/components/ui/table/data-table-skeleton";
+import { useDebouncedCallback } from "~/hooks/use-debounced-callback";
 import { getErrorMessage, planSubscriptionApi } from "~/http/api-server";
 import {
   PlanSubscriptionStatus,
@@ -37,8 +38,9 @@ const toEnumArray = <T extends string>(
 };
 
 export default function PlanSubscriptionListingPage() {
-  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
+  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
   const [patientId] = useQueryState("patientId", parseAsString);
   const [planId] = useQueryState("planId", parseAsString);
   const [companyId] = useQueryState("companyId", parseAsString);
@@ -56,9 +58,15 @@ export default function PlanSubscriptionListingPage() {
   );
   const payerTypeFilters = toEnumArray(payerType, Object.values(PayerType));
 
+  const debouncedSetSearch = useDebouncedCallback((value: string) => {
+    void setPage(1);
+    void setSearch(value);
+  }, 400);
+
   const filters: PlanSubscriptionListFilters = {
     page,
     limit: pageLimit,
+    ...(search.trim() ? { q: search.trim() } : {}),
     ...(patientId ? { patientId } : {}),
     ...(planId ? { planId } : {}),
     ...(companyId ? { companyId } : {}),
@@ -91,6 +99,8 @@ export default function PlanSubscriptionListingPage() {
       totalItems={totalItems}
       columns={columns}
       isFetching={isFetching}
+      globalSearch={search}
+      onGlobalSearchChange={debouncedSetSearch}
     />
   );
 }

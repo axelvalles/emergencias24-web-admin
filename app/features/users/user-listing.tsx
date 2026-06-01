@@ -14,6 +14,7 @@ import { columns } from "./user-tables/columns";
 import { UserTable } from "./user-tables";
 import type { UserListFilters } from "~/http/user-api";
 import { UserRole, UserStatus } from "~/types/users";
+import { useDebouncedCallback } from "~/hooks/use-debounced-callback";
 
 const sortSchema = z.array(z.object({ id: z.string(), desc: z.boolean() }));
 
@@ -33,14 +34,17 @@ const toEnumArray = <T extends string>(
 };
 
 export default function UserListingPage() {
-  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
-  const [fullName] = useQueryState("fullName", parseAsString);
-  const [email] = useQueryState("email", parseAsString);
-  const [phone] = useQueryState("phone", parseAsString);
+  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
   const [role] = useQueryState("role", parseAsArrayOf(parseAsString));
   const [status] = useQueryState("status", parseAsArrayOf(parseAsString));
   const [sort] = useQueryState("sort", parseAsJson(sortSchema));
+
+  const debouncedSetSearch = useDebouncedCallback((value: string) => {
+    void setPage(1);
+    void setSearch(value);
+  }, 400);
 
   const sortBy = sort && sort.length > 0 ? sort[0].id : undefined;
   const sortOrder: UserListFilters["sortOrder"] =
@@ -49,9 +53,7 @@ export default function UserListingPage() {
   const filters: UserListFilters = {
     page,
     limit: pageLimit,
-    fullName: fullName || undefined,
-    email: email || undefined,
-    phone: phone || undefined,
+    q: search.trim() || undefined,
     role: toEnumArray(role, Object.values(UserRole)),
     status: toEnumArray(status, Object.values(UserStatus)),
     sortBy,
@@ -72,7 +74,7 @@ export default function UserListingPage() {
   const totalItems = data?.total || 0;
 
   if (isLoading) {
-    return <DataTableSkeleton columnCount={5} rowCount={8} filterCount={4} />;
+    return <DataTableSkeleton columnCount={5} rowCount={8} filterCount={3} />;
   }
 
   return (
@@ -81,6 +83,8 @@ export default function UserListingPage() {
       totalItems={totalItems}
       columns={columns}
       isFetching={isFetching}
+      globalSearch={search}
+      onGlobalSearchChange={debouncedSetSearch}
     />
   );
 }

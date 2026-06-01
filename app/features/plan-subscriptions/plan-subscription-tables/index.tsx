@@ -10,6 +10,8 @@ interface PlanSubscriptionTableProps<TData, TValue> {
   totalItems: number;
   columns: ColumnDef<TData, TValue>[];
   isFetching: boolean;
+  globalSearch: string;
+  onGlobalSearchChange: (value: string) => void;
 }
 
 export function PlanSubscriptionTable<TData, TValue>({
@@ -17,6 +19,8 @@ export function PlanSubscriptionTable<TData, TValue>({
   totalItems = 0,
   columns,
   isFetching,
+  globalSearch,
+  onGlobalSearchChange,
 }: PlanSubscriptionTableProps<TData, TValue>) {
   const [pageSize] = useQueryState("perPage", parseAsInteger.withDefault(10));
   const pageCount = Math.ceil(totalItems / pageSize);
@@ -31,7 +35,15 @@ export function PlanSubscriptionTable<TData, TValue>({
 
   return (
     <DataTable table={table} isFetching={isFetching}>
-      <DataTableToolbar table={table} />
+      <DataTableToolbar
+        table={table}
+        globalSearch={{
+          value: globalSearch,
+          onChange: onGlobalSearchChange,
+          placeholder: "Buscar por paciente, documento, plan o empresa...",
+          label: "Busqueda",
+        }}
+      />
     </DataTable>
   );
 }

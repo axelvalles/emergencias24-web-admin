@@ -26,6 +26,7 @@ export default [
       index("./routes/_auth/plans/plans.tsx"),
       route("nuevo", "./routes/_auth/plans/new.tsx"),
       route("/editar/:id", "./routes/_auth/plans/edit.tsx"),
+      route("*", "./routes/_auth/plans/redirect.tsx"),
     ]),
 
     ...prefix("suscripciones", [

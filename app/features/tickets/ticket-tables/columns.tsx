@@ -97,11 +97,9 @@ export const columns: ColumnDef<Ticket>[] = [
     cell: ({ cell }) => <div>{cell.getValue<Ticket["requesterName"]>()}</div>,
     meta: {
       label: "Solicitante",
-      placeholder: "Buscar por nombre...",
-      variant: "text",
       icon: Text,
     },
-    enableColumnFilter: true,
+    enableColumnFilter: false,
   },
   {
     id: "serviceType",

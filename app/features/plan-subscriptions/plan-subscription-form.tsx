@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -11,6 +11,7 @@ import { FormSelect, type FormOption } from "~/components/forms/form-select";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Form } from "~/components/ui/form";
 import { LoadingButton } from "~/components/ui/loading-button";
+import { Button } from "~/components/ui/button";
 
 import {
   parseApiError,
@@ -33,7 +34,7 @@ import {
   planSubscriptionFormSchema,
   type PlanSubscriptionFormSchema,
 } from "./schemas";
-import { PlanTypeLabels } from "~/types/plans";
+import { PlanType, PlanTypeLabels } from "~/types/plans";
 
 const managePlanSubscriptionCreationErrors = (error: unknown) => {
   const result = parseApiError(error);
@@ -42,6 +43,11 @@ const managePlanSubscriptionCreationErrors = (error: unknown) => {
     result.errorCode === PlanSubscriptionCreationErrorCode.PLAN_ALREADY_ASSIGNED
   ) {
     toast.error("El paciente ya tiene asignado este plan");
+  } else if (
+    result.errorCode ===
+    PlanSubscriptionCreationErrorCode.PATIENT_ALREADY_HAS_PLAN_TYPE
+  ) {
+    toast.error("El paciente ya tiene una suscripción activa/suspendida de este tipo de plan");
   } else if (
     result.errorCode ===
     PlanSubscriptionCreationErrorCode.PATIENT_ALREADY_HAS_FAMILY_PLAN
@@ -72,6 +78,11 @@ const managePlanSubscriptionUpdateErrors = (error: unknown) => {
     result.errorCode === PlanSubscriptionUpdateErrorCode.PLAN_ALREADY_ASSIGNED
   ) {
     toast.error("El paciente ya tiene asignado este plan");
+  } else if (
+    result.errorCode ===
+    PlanSubscriptionUpdateErrorCode.PATIENT_ALREADY_HAS_PLAN_TYPE
+  ) {
+    toast.error("El paciente ya tiene una suscripción activa/suspendida de este tipo de plan");
   } else if (
     result.errorCode ===
     PlanSubscriptionUpdateErrorCode.PATIENT_ALREADY_HAS_FAMILY_PLAN
@@ -150,6 +161,30 @@ interface PlanSubscriptionFormProps {
   pageTitle: string;
 }
 
+type PlanFlowMode = PlanType.FAMILY | PlanType.CORPORATE | PlanType.GROUP;
+
+const planModeConfig: {
+  value: PlanFlowMode;
+  title: string;
+  description: string;
+}[] = [
+  {
+    value: PlanType.FAMILY,
+    title: "Individual / Familiar",
+    description: "Paciente titular y opcionalmente su grupo familiar",
+  },
+  {
+    value: PlanType.CORPORATE,
+    title: "Empresarial",
+    description: "Suscripción asociada a empresa como pagador",
+  },
+  {
+    value: PlanType.GROUP,
+    title: "Colectivo / Grupal",
+    description: "Cobertura grupal para colectivos",
+  },
+];
+
 export default function PlanSubscriptionForm({
   initialData,
   pageTitle,
@@ -167,6 +202,7 @@ export default function PlanSubscriptionForm({
   });
 
   const payerType = form.watch("payerType");
+  const selectedPlanId = form.watch("planId");
 
   // Fetch patients for select
   const { data: patientsData, isLoading: isLoadingPatients } = useQuery({
@@ -193,11 +229,31 @@ export default function PlanSubscriptionForm({
       label: patient.fullName,
     })) ?? [];
 
-  const planOptions: FormOption[] =
-    plansData?.data?.map((plan) => ({
-      value: plan.id,
-      label: `${plan.name} - ${PlanTypeLabels[plan.planType]}`,
-    })) ?? [];
+  const selectedPlan = plansData?.data?.find((plan) => plan.id === selectedPlanId);
+
+  const initialMode = useMemo<PlanFlowMode>(() => {
+    return (
+      (initialData?.plan?.planType as PlanFlowMode | undefined) ??
+      (plansData?.data?.find((plan) => plan.id === selectedPlanId)?.planType as
+        | PlanFlowMode
+        | undefined) ??
+      PlanType.FAMILY
+    );
+  }, [initialData?.plan?.planType, plansData?.data, selectedPlanId]);
+
+  const [activeMode, setActiveMode] = useState<PlanFlowMode>(initialMode);
+
+  useEffect(() => {
+    setActiveMode(initialMode);
+  }, [initialMode]);
+
+  const filteredPlanOptions: FormOption[] =
+    plansData?.data
+      ?.filter((plan) => plan.planType === activeMode)
+      .map((plan) => ({
+        value: plan.id,
+        label: `${plan.name} - ${PlanTypeLabels[plan.planType]}`,
+      })) ?? [];
 
   const companyOptions: FormOption[] =
     companiesData?.data?.map((company) => ({
@@ -211,6 +267,34 @@ export default function PlanSubscriptionForm({
       form.setValue("companyId", "");
     }
   }, [payerType, form]);
+
+  useEffect(() => {
+    if (!selectedPlan || initialData) {
+      return;
+    }
+
+    if (selectedPlan.planType === PlanType.CORPORATE) {
+      form.setValue("payerType", PayerType.COMPANY);
+      return;
+    }
+
+    if (selectedPlan.planType === PlanType.FAMILY) {
+      form.setValue("payerType", PayerType.PATIENT);
+    }
+  }, [selectedPlan, form, initialData]);
+
+  useEffect(() => {
+    if (!plansData?.data || !selectedPlanId) {
+      return;
+    }
+
+    const selected = plansData.data.find((plan) => plan.id === selectedPlanId);
+    if (!selected || selected.planType === activeMode) {
+      return;
+    }
+
+    form.setValue("planId", "");
+  }, [activeMode, selectedPlanId, plansData, form]);
 
   const createMutation = useMutation({
     mutationFn: async (values: PlanSubscriptionFormSchema) => {
@@ -272,6 +356,30 @@ export default function PlanSubscriptionForm({
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div className="space-y-3 rounded-lg border p-4">
+              <p className="text-sm font-medium">Tipo de suscripción</p>
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+                {planModeConfig.map((mode) => {
+                  const isActive = activeMode === mode.value;
+                  return (
+                    <Button
+                      key={mode.value}
+                      type="button"
+                      variant={isActive ? "default" : "outline"}
+                      className="h-auto items-start justify-start py-3 text-left"
+                      onClick={() => setActiveMode(mode.value)}
+                      disabled={isExecuting || !!initialData}
+                    >
+                      <span className="block">
+                        <span className="block text-sm font-semibold">{mode.title}</span>
+                        <span className="block text-xs opacity-80">{mode.description}</span>
+                      </span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormSelect
                 control={form.control}
@@ -287,7 +395,7 @@ export default function PlanSubscriptionForm({
                 control={form.control}
                 name="planId"
                 label="Plan"
-                options={planOptions}
+                options={filteredPlanOptions}
                 disabled={isExecuting || isLoadingOptions || !!initialData}
                 required
               />
@@ -296,7 +404,7 @@ export default function PlanSubscriptionForm({
                 name="payerType"
                 label="Tipo de pagador"
                 options={payerTypeOptions}
-                disabled={isExecuting}
+                disabled={isExecuting || (!initialData && selectedPlan?.planType === PlanType.CORPORATE)}
                 required
               />
               {payerType === PayerType.COMPANY && (
@@ -334,6 +442,12 @@ export default function PlanSubscriptionForm({
                 disabled={isExecuting}
               />
             </div>
+
+            {!initialData && selectedPlan?.planType === PlanType.CORPORATE && (
+              <p className="text-sm text-muted-foreground">
+                Los planes corporativos requieren pagador tipo empresa y selección de la empresa.
+              </p>
+            )}
 
             <div className="flex justify-end">
               <LoadingButton

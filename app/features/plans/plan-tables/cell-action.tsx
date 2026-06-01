@@ -13,7 +13,7 @@ import { Button } from "~/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 import { ConfirmModal } from "~/components/modal/confirm-modal";
 import { planApi } from "~/http/plan-api";
-import { getErrorMessage } from "~/http/api-server";
+import { getErrorMessage, parseApiError } from "~/http/api-server";
 import { PlanStatus, type Plan } from "~/types/plans";
 
 interface CellActionProps {
@@ -24,6 +24,7 @@ export const CellAction: FC<CellActionProps> = ({ data }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const hasActiveSubscriptions = (data.activeSubscriptionsCount ?? 0) > 0;
 
   const toggleStatusMutation = useMutation({
     mutationFn: async () => {
@@ -41,6 +42,16 @@ export const CellAction: FC<CellActionProps> = ({ data }) => {
       await queryClient.invalidateQueries({ queryKey: ["plans"] });
     },
     onError: (error) => {
+      const apiError = parseApiError(error);
+      const message = apiError.message.toLowerCase();
+
+      if (message.includes("suscripciones activas o suspendidas")) {
+        toast.error(
+          "No puedes eliminar este plan porque tiene suscripciones activas o suspendidas"
+        );
+        return;
+      }
+
       toast.error(getErrorMessage(error));
     },
   });
@@ -114,12 +125,16 @@ export const CellAction: FC<CellActionProps> = ({ data }) => {
               variant="outline"
               size="icon"
               onClick={() => setDeleteModalOpen(true)}
-              disabled={deleteMutation.isPending}
+              disabled={deleteMutation.isPending || hasActiveSubscriptions}
             >
               <IconTrash className="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Eliminar plan</TooltipContent>
+          <TooltipContent side="bottom">
+            {hasActiveSubscriptions
+              ? "No se puede eliminar: tiene suscripciones activas/suspendidas"
+              : "Eliminar plan"}
+          </TooltipContent>
         </Tooltip>
       </div>
     </>

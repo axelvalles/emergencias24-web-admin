@@ -63,9 +63,40 @@ const getStatusVariant = (status: PlanSubscriptionStatus) => {
   }
 };
 
+const getPlanTypeVariant = (planType?: PlanType) => {
+  switch (planType) {
+    case PlanType.CORPORATE:
+      return "secondary";
+    case PlanType.GROUP:
+      return "outline";
+    case PlanType.FAMILY:
+      return "default";
+    default:
+      return "secondary";
+  }
+};
+
+const benefitDefinitions: { key: string; label: string }[] = [
+  { key: "telemedicine", label: "Telemedicina" },
+  { key: "medicationDelivery", label: "Medicamentos" },
+  { key: "ambulanceTransfer", label: "Traslado ambulancia" },
+  { key: "homeCare", label: "Atención domiciliaria" },
+  { key: "workplaceCare", label: "Atención laboral" },
+  { key: "emergencyRoom", label: "Urgencias" },
+  { key: "specializedConsultations", label: "Consultas especializadas" },
+  { key: "labTests", label: "Laboratorios" },
+  { key: "consultations", label: "Consultas" },
+  { key: "emergencyCoverage", label: "Cobertura emergencias" },
+  { key: "dental", label: "Dental" },
+  { key: "optometry", label: "Optometría" },
+];
+
 function SubscriptionCard({ subscription }: { subscription: PlanSubscription }) {
   const plan = subscription.plan;
-  const benefits = plan?.benefits;
+  const benefits = (plan?.benefits ?? {}) as unknown as Record<string, unknown>;
+  const activeBenefits = benefitDefinitions.filter(
+    (benefit) => benefits[benefit.key] === true
+  );
   const isFamilyPlan = plan?.planType === PlanType.FAMILY;
 
   return (
@@ -80,6 +111,17 @@ function SubscriptionCard({ subscription }: { subscription: PlanSubscription }) 
                   {plan.description}
                 </p>
               )}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <Badge variant={getPlanTypeVariant(plan?.planType)}>
+                  {plan?.planType ? PlanTypeLabels[plan.planType] : "Tipo de plan"}
+                </Badge>
+                <Badge variant="outline">
+                  Pagador: {PayerTypeLabels[subscription.payerType]}
+                </Badge>
+                {subscription.company && (
+                  <Badge variant="outline">Empresa: {subscription.company.name}</Badge>
+                )}
+              </div>
             </div>
             <Badge variant={getStatusVariant(subscription.status)}>
               {PlanSubscriptionStatusLabels[subscription.status]}
@@ -124,20 +166,21 @@ function SubscriptionCard({ subscription }: { subscription: PlanSubscription }) 
             </div>
           </div>
 
-          {benefits && (
+          {plan?.benefits && (
             <div className="border-t pt-4">
               <p className="text-sm font-medium mb-2">Beneficios incluidos</p>
-              <div className="flex flex-wrap gap-2">
-                {benefits.consultations && (
-                  <Badge variant="outline">Consultas</Badge>
-                )}
-                {benefits.emergencyCoverage && (
-                  <Badge variant="outline">Emergencias</Badge>
-                )}
-                {benefits.dental && <Badge variant="outline">Dental</Badge>}
-                {benefits.optometry && <Badge variant="outline">Optometría</Badge>}
-              </div>
-              {benefits.notes && (
+              {activeBenefits.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {activeBenefits.map((benefit) => (
+                    <Badge key={benefit.key} variant="outline">
+                      {benefit.label}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Sin beneficios configurados</p>
+              )}
+              {typeof benefits.notes === "string" && benefits.notes && (
                 <p className="text-sm text-muted-foreground mt-2">
                   {benefits.notes}
                 </p>

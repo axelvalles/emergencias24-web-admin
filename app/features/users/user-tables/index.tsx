@@ -11,12 +11,16 @@ interface UserTableParams<TData, TValue> {
   totalItems: number;
   columns: ColumnDef<TData, TValue>[];
   isFetching: boolean;
+  globalSearch: string;
+  onGlobalSearchChange: (value: string) => void;
 }
 export function UserTable<TData, TValue>({
   data = [],
   totalItems = 0,
   columns,
   isFetching,
+  globalSearch,
+  onGlobalSearchChange,
 }: UserTableParams<TData, TValue>) {
   const [pageSize] = useQueryState("perPage", parseAsInteger.withDefault(10));
 
@@ -32,7 +36,15 @@ export function UserTable<TData, TValue>({
 
   return (
     <DataTable table={table} isFetching={isFetching}>
-      <DataTableToolbar table={table} />
+      <DataTableToolbar
+        table={table}
+        globalSearch={{
+          value: globalSearch,
+          onChange: onGlobalSearchChange,
+          placeholder: "Buscar por nombre, email o telefono...",
+          label: "Busqueda",
+        }}
+      />
     </DataTable>
   );
 }

@@ -13,7 +13,7 @@ import { Button } from "~/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip";
 import { ConfirmModal } from "~/components/modal/confirm-modal";
 import { companyApi } from "~/http/company-api";
-import { getErrorMessage } from "~/http/api-server";
+import { getErrorMessage, parseApiError } from "~/http/api-server";
 import { type Company, CompanyStatus } from "~/types/companies";
 
 interface CellActionProps {
@@ -24,6 +24,7 @@ export const CellAction: FC<CellActionProps> = ({ data }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const hasAssociatedPatients = (data.associatedPatientsCount ?? 0) > 0;
 
   const toggleStatusMutation = useMutation({
     mutationFn: async () => {
@@ -41,6 +42,16 @@ export const CellAction: FC<CellActionProps> = ({ data }) => {
       await queryClient.invalidateQueries({ queryKey: ["companies"] });
     },
     onError: (error) => {
+      const apiError = parseApiError(error);
+      const message = apiError.message.toLowerCase();
+
+      if (message.includes("pacientes asociados")) {
+        toast.error(
+          "No puedes eliminar esta empresa porque tiene pacientes asociados"
+        );
+        return;
+      }
+
       toast.error(getErrorMessage(error));
     },
   });
@@ -79,6 +90,8 @@ export const CellAction: FC<CellActionProps> = ({ data }) => {
               variant="outline"
               size="icon"
               onClick={() => navigate(`/empresas/editar/${data.id}`)}
+              aria-label="Editar empresa"
+              data-testid={`company-edit-${data.id}`}
             >
               <IconEdit className="size-4" />
             </Button>
@@ -93,6 +106,12 @@ export const CellAction: FC<CellActionProps> = ({ data }) => {
               size="icon"
               onClick={() => toggleStatusMutation.mutate()}
               disabled={toggleStatusMutation.isPending}
+              aria-label={
+                data.status === CompanyStatus.ACTIVE
+                  ? "Desactivar empresa"
+                  : "Activar empresa"
+              }
+              data-testid={`company-toggle-${data.id}`}
             >
               {data.status === CompanyStatus.ACTIVE ? (
                 <IconPlayerPause className="size-4" />
@@ -114,12 +133,22 @@ export const CellAction: FC<CellActionProps> = ({ data }) => {
               variant="outline"
               size="icon"
               onClick={() => setDeleteModalOpen(true)}
-              disabled={deleteMutation.isPending}
+              disabled={deleteMutation.isPending || hasAssociatedPatients}
+              aria-label={
+                hasAssociatedPatients
+                  ? "No se puede eliminar empresa"
+                  : "Eliminar empresa"
+              }
+              data-testid={`company-delete-${data.id}`}
             >
               <IconTrash className="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Eliminar empresa</TooltipContent>
+          <TooltipContent side="bottom">
+            {hasAssociatedPatients
+              ? "No se puede eliminar: tiene pacientes asociados"
+              : "Eliminar empresa"}
+          </TooltipContent>
         </Tooltip>
       </div>
     </>

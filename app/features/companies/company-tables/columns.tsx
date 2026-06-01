@@ -33,10 +33,8 @@ export const columns: ColumnDef<Company>[] = [
     },
     meta: {
       label: "Nombre",
-      placeholder: "Buscar...",
-      variant: "text",
     },
-    enableColumnFilter: true,
+    enableColumnFilter: false,
   },
   {
     id: "contactEmail",
@@ -55,10 +53,8 @@ export const columns: ColumnDef<Company>[] = [
     },
     meta: {
       label: "Email",
-      placeholder: "Buscar...",
-      variant: "text",
     },
-    enableColumnFilter: true,
+    enableColumnFilter: false,
   },
   {
     id: "status",

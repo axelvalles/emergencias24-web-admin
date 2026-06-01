@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 
 import { DataTableSkeleton } from "~/components/ui/table/data-table-skeleton";
+import { useDebouncedCallback } from "~/hooks/use-debounced-callback";
 import { getErrorMessage, planApi } from "~/http/api-server";
 import { PlanStatus, PlanType } from "~/types/plans";
 import type { PlanListFilters } from "~/types/plans";
@@ -49,13 +50,18 @@ const parsePriceRange = (value: string | null) => {
 };
 
 export default function PlanListingPage() {
-  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
-  const [name] = useQueryState("name", parseAsString);
+  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
   const [planType] = useQueryState("planType", parseAsArrayOf(parseAsString));
   const [status] = useQueryState("status", parseAsArrayOf(parseAsString));
   const [monthlyCost] = useQueryState("monthlyCost", parseAsString);
   const [sort] = useQueryState("sort", parseAsJson(sortSchema));
+
+  const debouncedSetSearch = useDebouncedCallback((value: string) => {
+    void setPage(1);
+    void setSearch(value);
+  }, 400);
 
   const sortBy = sort && sort.length > 0 ? sort[0].id : undefined;
   const sortOrder =
@@ -68,7 +74,7 @@ export default function PlanListingPage() {
   const filters: PlanListFilters = {
     page,
     limit: pageLimit,
-    ...(name ? { name } : {}),
+    ...(search.trim() ? { q: search.trim() } : {}),
     ...(statusFilters ? { status: statusFilters } : {}),
     ...(planTypeFilters ? { planType: planTypeFilters } : {}),
     ...priceFilters,
@@ -87,7 +93,7 @@ export default function PlanListingPage() {
   }
 
   if (isLoading) {
-    return <DataTableSkeleton columnCount={5} rowCount={10} filterCount={4} />;
+    return <DataTableSkeleton columnCount={5} rowCount={10} filterCount={3} />;
   }
 
   const plans = data?.data ?? [];
@@ -99,6 +105,8 @@ export default function PlanListingPage() {
       totalItems={totalItems}
       columns={columns}
       isFetching={isFetching}
+      globalSearch={search}
+      onGlobalSearchChange={debouncedSetSearch}
     />
   );
 }

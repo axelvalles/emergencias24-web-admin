@@ -14,15 +14,30 @@ import { Label } from "@radix-ui/react-dropdown-menu";
 
 interface DataTableToolbarProps<TData> extends React.ComponentProps<"div"> {
   table: Table<TData>;
+  globalSearch?: {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    label?: string;
+  };
 }
 
 export function DataTableToolbar<TData>({
   table,
+  globalSearch,
   children,
   className,
   ...props
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
+  const isGlobalSearchActive = Boolean(globalSearch?.value?.trim());
+  const [globalSearchInput, setGlobalSearchInput] = React.useState(
+    globalSearch?.value ?? ""
+  );
+
+  React.useEffect(() => {
+    setGlobalSearchInput(globalSearch?.value ?? "");
+  }, [globalSearch?.value]);
 
   const columns = React.useMemo(
     () => table.getAllColumns().filter((column) => column.getCanFilter()),
@@ -31,7 +46,9 @@ export function DataTableToolbar<TData>({
 
   const onReset = React.useCallback(() => {
     table.resetColumnFilters();
-  }, [table]);
+    setGlobalSearchInput("");
+    globalSearch?.onChange("");
+  }, [table, globalSearch]);
 
   return (
     <div
@@ -44,10 +61,25 @@ export function DataTableToolbar<TData>({
       {...props}
     >
       <div className="flex flex-1 flex-wrap items-end gap-2">
+        {globalSearch ? (
+          <div className="inline-flex flex-col gap-2">
+            <Label>{globalSearch.label ?? "Buscar"}</Label>
+            <Input
+              placeholder={globalSearch.placeholder ?? "Buscar..."}
+              value={globalSearchInput}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                setGlobalSearchInput(nextValue);
+                globalSearch.onChange(nextValue);
+              }}
+              className="h-8 w-48 lg:w-72"
+            />
+          </div>
+        ) : null}
         {columns.map((column) => (
           <DataTableToolbarFilter key={column.id} column={column} />
         ))}
-        {isFiltered && (
+        {(isFiltered || isGlobalSearchActive) && (
           <Button
             aria-label="Reiniciar filtros"
             variant="outline"

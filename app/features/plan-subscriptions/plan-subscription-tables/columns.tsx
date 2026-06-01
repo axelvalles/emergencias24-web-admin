@@ -7,6 +7,7 @@ import {
   PayerTypeLabels,
   type PlanSubscription,
 } from "~/types/plan-subscriptions";
+import { PlanType, PlanTypeLabels } from "~/types/plans";
 import { CellAction } from "./cell-action";
 
 const statusFilterOptions = Object.entries(PlanSubscriptionStatusLabels).map(
@@ -51,6 +52,19 @@ const getStatusVariant = (status: PlanSubscriptionStatus) => {
   }
 };
 
+const getPlanTypeVariant = (planType?: PlanType) => {
+  switch (planType) {
+    case PlanType.CORPORATE:
+      return "secondary";
+    case PlanType.GROUP:
+      return "outline";
+    case PlanType.FAMILY:
+      return "default";
+    default:
+      return "secondary";
+  }
+};
+
 export const columns: ColumnDef<PlanSubscription>[] = [
   {
     id: "patient",
@@ -84,7 +98,19 @@ export const columns: ColumnDef<PlanSubscription>[] = [
     header: ({ column }: { column: Column<PlanSubscription> }) => (
       <DataTableColumnHeader column={column} title="Plan" />
     ),
-    cell: ({ row }) => row.original.plan?.name ?? "—",
+    cell: ({ row }) => {
+      const plan = row.original.plan;
+      return (
+        <div className="space-y-1">
+          <p className="font-medium text-foreground">{plan?.name ?? "—"}</p>
+          {plan?.planType && (
+            <Badge variant={getPlanTypeVariant(plan.planType)}>
+              {PlanTypeLabels[plan.planType]}
+            </Badge>
+          )}
+        </div>
+      );
+    },
     meta: {
       label: "Plan",
       placeholder: "Buscar por plan...",
@@ -102,7 +128,7 @@ export const columns: ColumnDef<PlanSubscription>[] = [
       const { payerType, company } = row.original;
       return (
         <div className="space-y-1">
-          <p>{PayerTypeLabels[payerType]}</p>
+          <Badge variant="outline">{PayerTypeLabels[payerType]}</Badge>
           {company && (
             <p className="text-sm text-muted-foreground">{company.name}</p>
           )}

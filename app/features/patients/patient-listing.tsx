@@ -15,6 +15,7 @@ import {
 } from "nuqs";
 import z from "zod";
 import { PatientStatus } from "~/types/patients";
+import { useDebouncedCallback } from "~/hooks/use-debounced-callback";
 
 const sortSchema = z.array(z.object({ id: z.string(), desc: z.boolean() }));
 
@@ -34,10 +35,9 @@ const toEnumArray = <T extends string>(
 };
 
 export default function PatientListingPage() {
-  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
-  const [fullName] = useQueryState("fullName", parseAsString);
-  const [documentNumber] = useQueryState("documentNumber", parseAsString);
+  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
   const [status] = useQueryState("status", parseAsArrayOf(parseAsString));
   const [sort] = useQueryState("sort", parseAsJson(sortSchema));
 
@@ -48,12 +48,16 @@ export default function PatientListingPage() {
   const filters = {
     page,
     limit: pageLimit,
-    fullName: fullName || undefined,
-    documentNumber: documentNumber || undefined,
+    q: search.trim() || undefined,
     status: toEnumArray(status, Object.values(PatientStatus)),
     sortBy,
     sortOrder,
   };
+
+  const debouncedSetSearch = useDebouncedCallback((value: string) => {
+    void setPage(1);
+    void setSearch(value);
+  }, 400);
 
   const { data, isLoading, error, isFetching, refetch } = useQuery({
     queryKey: ["patients", filters],
@@ -143,6 +147,8 @@ export default function PatientListingPage() {
         totalItems={totalItems}
         columns={columns}
         isFetching={isFetching}
+        globalSearch={search}
+        onGlobalSearchChange={debouncedSetSearch}
       />
     </div>
   );

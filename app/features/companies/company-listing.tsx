@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { DataTableSkeleton } from "~/components/ui/table/data-table-skeleton";
 import { getErrorMessage } from "~/http/api-server";
 import { companyApi } from "~/http/company-api";
+import { useDebouncedCallback } from "~/hooks/use-debounced-callback";
 import { type CompanyListFilters, CompanyStatus } from "~/types/companies";
 import { CompanyTable } from "./company-tables";
 import { columns } from "./company-tables/columns";
@@ -34,11 +35,9 @@ const toEnumArray = <T extends string>(
 };
 
 export default function CompanyListingPage() {
-  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
-  const [name] = useQueryState("name", parseAsString);
-  const [taxId] = useQueryState("taxId", parseAsString);
-  const [contactEmail] = useQueryState("contactEmail", parseAsString);
+  const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
   const [status] = useQueryState("status", parseAsArrayOf(parseAsString));
   const [sort] = useQueryState("sort", parseAsJson(sortSchema));
 
@@ -48,12 +47,15 @@ export default function CompanyListingPage() {
 
   const statusFilters = toEnumArray(status, Object.values(CompanyStatus));
 
+  const debouncedSetSearch = useDebouncedCallback((value: string) => {
+    void setPage(1);
+    void setSearch(value);
+  }, 400);
+
   const filters: CompanyListFilters = {
     page,
     limit: pageLimit,
-    ...(name ? { name } : {}),
-    ...(taxId ? { taxId } : {}),
-    ...(contactEmail ? { contactEmail } : {}),
+    ...(search.trim() ? { q: search.trim() } : {}),
     ...(statusFilters ? { status: statusFilters } : {}),
     ...(sortBy ? { sortBy } : {}),
     ...(sortOrder ? { sortOrder: sortOrder as "ASC" | "DESC" } : {}),
@@ -70,7 +72,7 @@ export default function CompanyListingPage() {
   }
 
   if (isLoading) {
-    return <DataTableSkeleton columnCount={4} rowCount={8} filterCount={4} />;
+    return <DataTableSkeleton columnCount={4} rowCount={8} filterCount={2} />;
   }
 
   const companies = data?.data ?? [];
@@ -82,6 +84,8 @@ export default function CompanyListingPage() {
       totalItems={totalItems}
       columns={columns}
       isFetching={isFetching}
+      globalSearch={search}
+      onGlobalSearchChange={debouncedSetSearch}
     />
   );
 }

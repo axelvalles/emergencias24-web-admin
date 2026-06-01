@@ -9,6 +9,8 @@ import { FormInput } from "~/components/forms/form-input";
 import { FormSelect, type FormOption } from "~/components/forms/form-select";
 import { FormSwitch } from "~/components/forms/form-switch";
 import { FormTextarea } from "~/components/forms/form-textarea";
+import { Button } from "~/components/ui/button";
+import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Form } from "~/components/ui/form";
 import { LoadingButton } from "~/components/ui/loading-button";
@@ -34,6 +36,17 @@ const defaultBenefits = {
   labTests: false,
   notes: "",
 } satisfies PlanFormSchema["benefits"];
+
+const benefitFieldKeys = [
+  "telemedicine",
+  "medicationDelivery",
+  "ambulanceTransfer",
+  "homeCare",
+  "workplaceCare",
+  "emergencyRoom",
+  "specializedConsultations",
+  "labTests",
+] as const;
 
 const getDefaultValues = (initialData: PlanDetail | null): PlanFormSchema => ({
   name: initialData?.name ?? "",
@@ -144,6 +157,21 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
   });
 
   const isExecuting = createMutation.isPending || updateMutation.isPending;
+  const benefits = form.watch("benefits");
+
+  const activeBenefitsCount = benefitFieldKeys.reduce(
+    (count, key) => (benefits[key] ? count + 1 : count),
+    0
+  );
+
+  const setAllBenefits = (value: boolean) => {
+    benefitFieldKeys.forEach((key) => {
+      form.setValue(`benefits.${key}`, value, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    });
+  };
 
   async function onSubmit(values: PlanFormSchema) {
     if (initialData) {
@@ -159,41 +187,60 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
         <CardTitle className="text-left text-2xl font-bold">
           {pageTitle}
         </CardTitle>
+        {initialData && (initialData.activeSubscriptionsCount ?? 0) > 0 && (
+          <div className="pt-2">
+            <Badge variant="secondary">
+              {initialData.activeSubscriptionsCount} suscripciones activas/suspendidas
+            </Badge>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Este plan está en uso. No se puede eliminar mientras tenga suscripciones activas o suspendidas.
+            </p>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <FormInput
-                control={form.control}
-                name="name"
-                label="Nombre del plan"
-                disabled={isExecuting}
-                required
-              />
-              <FormSelect
-                control={form.control}
-                name="planType"
-                label="Tipo de plan"
-                options={planTypeOptions}
-                disabled={isExecuting}
-                required
-              />
-              <FormInput
-                control={form.control}
-                name="monthlyCost"
-                label="Costo mensual"
-                type="text"
-                disabled={isExecuting}
-                onChange={handleMonthlyCostChange}
-              />
-              <FormTextarea
-                control={form.control}
-                name="description"
-                label="Descripción"
-                disabled={isExecuting}
-                className="md:col-span-2"
-              />
+            <div className="space-y-4">
+              <div>
+                <p className="text-lg font-semibold">Datos del plan</p>
+                <p className="text-sm text-muted-foreground">
+                  Define modalidad, costo y contexto comercial del plan.
+                </p>
+              </div>
+              <Separator />
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <FormInput
+                  control={form.control}
+                  name="name"
+                  label="Nombre del plan"
+                  disabled={isExecuting}
+                  required
+                />
+                <FormSelect
+                  control={form.control}
+                  name="planType"
+                  label="Tipo de plan"
+                  options={planTypeOptions}
+                  disabled={isExecuting}
+                  required
+                />
+                <FormInput
+                  control={form.control}
+                  name="monthlyCost"
+                  label="Costo mensual"
+                  type="text"
+                  disabled={isExecuting}
+                  onChange={handleMonthlyCostChange}
+                />
+                <FormTextarea
+                  control={form.control}
+                  name="description"
+                  label="Descripción"
+                  disabled={isExecuting}
+                  className="md:col-span-2"
+                />
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -202,8 +249,31 @@ export default function PlanForm({ initialData, pageTitle }: PlanFormProps) {
                 <p className="text-sm text-muted-foreground">
                   Configura los beneficios incluidos en el plan.
                 </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {activeBenefitsCount} de {benefitFieldKeys.length} beneficios activos
+                </p>
               </div>
               <Separator />
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isExecuting}
+                  onClick={() => setAllBenefits(true)}
+                >
+                  Activar todos
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isExecuting}
+                  onClick={() => setAllBenefits(false)}
+                >
+                  Limpiar todos
+                </Button>
+              </div>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormSwitch
                   control={form.control}

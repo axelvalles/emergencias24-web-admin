@@ -4,6 +4,7 @@ import { httpClient } from "./client";
 export type UserListFilters = {
   page?: number;
   limit?: number;
+  q?: string;
   fullName?: string;
   email?: string;
   phone?: string;

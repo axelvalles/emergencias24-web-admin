@@ -61,10 +61,8 @@ export const columns: ColumnDef<Plan>[] = [
     },
     meta: {
       label: "Nombre",
-      placeholder: "Buscar por nombre...",
-      variant: "text",
     },
-    enableColumnFilter: true,
+    enableColumnFilter: false,
   },
   {
     id: "planType",
@@ -103,6 +101,20 @@ export const columns: ColumnDef<Plan>[] = [
       options: planStatusFilterOptions,
     },
     enableColumnFilter: true,
+  },
+  {
+    id: "activeSubscriptionsCount",
+    accessorKey: "activeSubscriptionsCount",
+    header: ({ column }: { column: Column<Plan> }) => (
+      <DataTableColumnHeader column={column} title="Suscripciones activas" />
+    ),
+    cell: ({ row }) => {
+      const count = row.original.activeSubscriptionsCount ?? 0;
+      return (
+        <Badge variant={count > 0 ? "secondary" : "outline"}>{count}</Badge>
+      );
+    },
+    enableColumnFilter: false,
   },
   {
     id: "monthlyCost",
