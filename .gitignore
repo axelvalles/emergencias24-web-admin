@@ -9,3 +9,4 @@ test-results
 .auth
 playwright-report
 .turbo
+.atl

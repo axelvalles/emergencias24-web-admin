@@ -49,20 +49,7 @@ export default defineConfig({
 
   webServer: [
     {
-      command: "pnpm --filter @emergencias24/backend dev",
-      url: apiURL,
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-      env: {
-        NODE_ENV: "test",
-        AUTH_LOGIN_THROTTLE_LIMIT: "100",
-        API_THROTTLE_LIMIT: "10000",
-        BULK_THROTTLE_LIMIT: "1000",
-      },
-    },
-    {
-      command:
-        'pnpm --filter @emergencias24/web-admin dev --host 0.0.0.0 --port 5173',
+      command: "pnpm dev",
       url: "http://localhost:5173",
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
