@@ -45,31 +45,33 @@ export const ticketApi = {
     return httpClient.patch(`/tickets/${id}/status`, { status });
   },
 
-  completeTicket: async (id: string): Promise<ApiResponse<Ticket>> => {
-    return httpClient.patch(`/tickets/${id}/complete`);
+  completeTicket: async (
+    id: string,
+    comment?: string
+  ): Promise<ApiResponse<Ticket>> => {
+    return httpClient.patch(`/tickets/${id}/complete`, { comment });
   },
 
-  cancelTicket: async (
-    id: string,
-    cancellationReason?: string
-  ): Promise<ApiResponse<Ticket>> => {
-    return httpClient.patch(`/tickets/${id}/cancel`, {
-      cancellationReason,
-    });
+  cancelTicket: async (id: string, comment?: string): Promise<ApiResponse<Ticket>> => {
+    return httpClient.patch(`/tickets/${id}/cancel`, { comment });
   },
 
   assignTicket: async (
     id: string,
-    userId: string
+    userId: string,
+    comment?: string
   ): Promise<ApiResponse<Ticket>> => {
-    return httpClient.patch(`/tickets/${id}/assign/${userId}`);
+    return httpClient.patch(`/tickets/${id}/assign/${userId}`, { comment });
   },
 
   getTicketHistory: async (id: string): Promise<TicketStatusHistory[]> => {
     return httpClient.get(`/tickets/${id}/history`);
   },
 
-  startTicket: async (id: string): Promise<ApiResponse<Ticket>> => {
-    return httpClient.patch(`/tickets/${id}/start`);
+  startTicket: async (
+    id: string,
+    comment?: string
+  ): Promise<ApiResponse<Ticket>> => {
+    return httpClient.patch(`/tickets/${id}/start`, { comment });
   },
 };

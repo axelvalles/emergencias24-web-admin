@@ -67,7 +67,6 @@ export interface Ticket {
   speciality: string | null;
   description: string;
   note: string | null;
-  cancellationReason: string;
   assignedUser: User | null;
   assignedAt: Date | null;
   completedAt: Date | null;
