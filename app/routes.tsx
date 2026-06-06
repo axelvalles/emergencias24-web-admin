@@ -29,6 +29,12 @@ export default [
       route("*", "./routes/_auth/plans/redirect.tsx"),
     ]),
 
+    ...prefix("beneficios", [
+      index("./routes/_auth/benefits/benefits.tsx"),
+      route("nuevo", "./routes/_auth/benefits/new.tsx"),
+      route("/editar/:id", "./routes/_auth/benefits/edit.tsx"),
+    ]),
+
     ...prefix("suscripciones", [
       index("./routes/_auth/plan-subscriptions/plan-subscriptions.tsx"),
       route("nueva", "./routes/_auth/plan-subscriptions/new.tsx"),
@@ -40,6 +46,11 @@ export default [
       route("nueva", "./routes/_auth/companies/new.tsx"),
       route("/editar/:id", "./routes/_auth/companies/edit.tsx"),
     ]),
+
+    route(
+      "costos-municipio",
+      "./routes/_auth/municipality-pricing/municipality-pricing.tsx"
+    ),
 
     ...prefix("tickets", [
       index("./routes/_auth/tickets.tsx"),

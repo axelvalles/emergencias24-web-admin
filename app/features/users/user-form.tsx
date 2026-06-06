@@ -1,5 +1,5 @@
 import { FormInput } from "~/components/forms/form-input";
-import { FormSelect, type FormOption } from "~/components/forms/form-select";
+import { FormSelect } from "~/components/forms/form-select";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Form } from "~/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,13 +19,7 @@ import {
   UserRoleLabels,
 } from "~/types/users";
 import { queryClient } from "~/lib/query-client";
-
-const roleOptions: FormOption[] = Object.entries(UserRoleLabels).map(
-  ([value, label]) => ({
-    value,
-    label,
-  })
-);
+import { useAuthStore } from "~/store/useAuthStore";
 
 const buildCommonPayload = (
   values: UserFormSchema
@@ -68,6 +62,22 @@ export default function UserForm({
   const [pageSize] = useQueryState("perPage", parseAsInteger.withDefault(10));
 
   const navigate = useNavigate();
+  const currentUser = useAuthStore((state) => state.user);
+  const roleOptions = Object.entries(UserRoleLabels)
+    .filter(([value]) => {
+      if (value !== UserRole.SUPER_ADMIN) {
+        return true;
+      }
+
+      return (
+        currentUser?.role === UserRole.SUPER_ADMIN ||
+        initialData?.role === UserRole.SUPER_ADMIN
+      );
+    })
+    .map(([value, label]) => ({
+      value,
+      label,
+    }));
 
   const createMutation = useMutation({
     mutationFn: async (values: UserFormSchema) => {
@@ -110,7 +120,7 @@ export default function UserForm({
       phone: initialData?.phone || "",
       email: initialData?.email || "",
       password: "",
-      role: initialData?.role || UserRole.CLINIC_ADMIN,
+      role: initialData?.role || UserRole.OPERATOR,
     },
   });
 

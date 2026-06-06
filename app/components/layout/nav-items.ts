@@ -1,4 +1,5 @@
 import type { Icons } from "../icons";
+import { UserRole } from "~/types/users";
 
 export interface NavItem {
   title: string;
@@ -10,6 +11,7 @@ export interface NavItem {
   label?: string;
   description?: string;
   isActive?: boolean;
+  allowedRoles?: readonly UserRole[];
   items?: NavItem[];
 }
 
@@ -60,6 +62,14 @@ export const navItems: NavItem[] = [
     items: [],
   },
   {
+    title: "Beneficios",
+    url: "/beneficios",
+    icon: "benefits",
+    shortcut: ["b", "f"],
+    isActive: false,
+    items: [],
+  },
+  {
     title: "Suscripciones",
     url: "/suscripciones",
     icon: "subscriptions",
@@ -82,6 +92,15 @@ export const navItems: NavItem[] = [
     shortcut: ["t", "t"],
     isActive: false,
     items: [], // No child items
+  },
+  {
+    title: "Costos",
+    url: "/costos-municipio",
+    icon: "subscriptions",
+    shortcut: ["m", "c"],
+    isActive: false,
+    allowedRoles: [UserRole.SUPER_ADMIN],
+    items: [],
   },
   {
     title: "Usuarios",

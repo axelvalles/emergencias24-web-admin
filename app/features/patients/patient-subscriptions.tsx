@@ -15,7 +15,12 @@ import {
   PayerTypeLabels,
   type PlanSubscription,
 } from "~/types/plan-subscriptions";
-import { PlanType, PlanTypeLabels } from "~/types/plans";
+import {
+  PlanBillingPeriodLabels,
+  PlanBenefitValueType,
+  PlanType,
+  PlanTypeLabels,
+} from "~/types/plans";
 import FamilyMembersSection from "~/features/plan-subscriptions/family-members-section";
 
 interface PatientSubscriptionsProps {
@@ -76,27 +81,25 @@ const getPlanTypeVariant = (planType?: PlanType) => {
   }
 };
 
-const benefitDefinitions: { key: string; label: string }[] = [
-  { key: "telemedicine", label: "Telemedicina" },
-  { key: "medicationDelivery", label: "Medicamentos" },
-  { key: "ambulanceTransfer", label: "Traslado ambulancia" },
-  { key: "homeCare", label: "Atención domiciliaria" },
-  { key: "workplaceCare", label: "Atención laboral" },
-  { key: "emergencyRoom", label: "Urgencias" },
-  { key: "specializedConsultations", label: "Consultas especializadas" },
-  { key: "labTests", label: "Laboratorios" },
-  { key: "consultations", label: "Consultas" },
-  { key: "emergencyCoverage", label: "Cobertura emergencias" },
-  { key: "dental", label: "Dental" },
-  { key: "optometry", label: "Optometría" },
-];
+const formatPlanBenefit = (
+  planBenefit: NonNullable<
+    NonNullable<PlanSubscription["plan"]>["planBenefits"]
+  >[number]
+) => {
+  if (planBenefit.valueType === PlanBenefitValueType.DISCOUNT) {
+    return `${planBenefit.benefit.name}: ${planBenefit.discountPercentage}% off`;
+  }
+
+  if (planBenefit.isUnlimited) {
+    return `${planBenefit.benefit.name}: ilimitado`;
+  }
+
+  return `${planBenefit.benefit.name}: ${planBenefit.quantity}`;
+};
 
 function SubscriptionCard({ subscription }: { subscription: PlanSubscription }) {
   const plan = subscription.plan;
-  const benefits = (plan?.benefits ?? {}) as unknown as Record<string, unknown>;
-  const activeBenefits = benefitDefinitions.filter(
-    (benefit) => benefits[benefit.key] === true
-  );
+  const activeBenefits = plan?.planBenefits ?? [];
   const isFamilyPlan = plan?.planType === PlanType.FAMILY;
 
   return (
@@ -137,8 +140,14 @@ function SubscriptionCard({ subscription }: { subscription: PlanSubscription }) 
               </p>
             </div>
             <div>
-              <p className="text-muted-foreground">Costo mensual</p>
+              <p className="text-muted-foreground">Monto de cobro</p>
               <p className="font-medium">{formatCurrency(plan?.monthlyCost)}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Periodo de cobro</p>
+              <p className="font-medium">
+                {plan?.billingPeriod ? PlanBillingPeriodLabels[plan.billingPeriod] : "—"}
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Pagador</p>
@@ -166,23 +175,23 @@ function SubscriptionCard({ subscription }: { subscription: PlanSubscription }) 
             </div>
           </div>
 
-          {plan?.benefits && (
+          {(activeBenefits.length > 0 || plan?.benefitsNotes) && (
             <div className="border-t pt-4">
               <p className="text-sm font-medium mb-2">Beneficios incluidos</p>
               {activeBenefits.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {activeBenefits.map((benefit) => (
-                    <Badge key={benefit.key} variant="outline">
-                      {benefit.label}
+                    <Badge key={benefit.id ?? benefit.benefitId} variant="outline">
+                      {formatPlanBenefit(benefit)}
                     </Badge>
                   ))}
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">Sin beneficios configurados</p>
               )}
-              {typeof benefits.notes === "string" && benefits.notes && (
+              {plan?.benefitsNotes && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  {benefits.notes}
+                  {plan.benefitsNotes}
                 </p>
               )}
             </div>

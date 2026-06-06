@@ -1,7 +1,9 @@
-import type { ColumnDef, Column } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "~/components/ui/table/data-table-column-header";
+import type { Column, ColumnDef } from "@tanstack/react-table";
+
 import { Badge } from "~/components/ui/badge";
+import { DataTableColumnHeader } from "~/components/ui/table/data-table-column-header";
 import {
+  PlanBillingPeriodLabels,
   PlanStatus,
   PlanStatusLabels,
   PlanTypeLabels,
@@ -15,6 +17,13 @@ const planTypeFilterOptions = Object.entries(PlanTypeLabels).map(
     value,
   })
 );
+
+const planBillingPeriodFilterOptions = Object.entries(
+  PlanBillingPeriodLabels
+).map(([value, label]) => ({
+  label,
+  value,
+}));
 
 const planStatusFilterOptions = Object.entries(PlanStatusLabels).map(
   ([value, label]) => ({
@@ -80,6 +89,21 @@ export const columns: ColumnDef<Plan>[] = [
     enableColumnFilter: true,
   },
   {
+    id: "billingPeriod",
+    accessorKey: "billingPeriod",
+    header: ({ column }: { column: Column<Plan> }) => (
+      <DataTableColumnHeader column={column} title="Periodo de cobro" />
+    ),
+    cell: ({ row }) => PlanBillingPeriodLabels[row.original.billingPeriod],
+    meta: {
+      label: "Periodo de cobro",
+      placeholder: "Seleccionar...",
+      variant: "multiSelect",
+      options: planBillingPeriodFilterOptions,
+    },
+    enableColumnFilter: true,
+  },
+  {
     id: "status",
     accessorKey: "status",
     header: ({ column }: { column: Column<Plan> }) => (
@@ -103,6 +127,18 @@ export const columns: ColumnDef<Plan>[] = [
     enableColumnFilter: true,
   },
   {
+    id: "benefitsCount",
+    accessorKey: "benefitsCount",
+    header: ({ column }: { column: Column<Plan> }) => (
+      <DataTableColumnHeader column={column} title="Beneficios" />
+    ),
+    cell: ({ row }) => {
+      const benefitsCount = row.original.benefitsCount ?? 0;
+      return <Badge variant={benefitsCount > 0 ? "secondary" : "outline"}>{benefitsCount}</Badge>;
+    },
+    enableColumnFilter: false,
+  },
+  {
     id: "activeSubscriptionsCount",
     accessorKey: "activeSubscriptionsCount",
     header: ({ column }: { column: Column<Plan> }) => (
@@ -110,9 +146,7 @@ export const columns: ColumnDef<Plan>[] = [
     ),
     cell: ({ row }) => {
       const count = row.original.activeSubscriptionsCount ?? 0;
-      return (
-        <Badge variant={count > 0 ? "secondary" : "outline"}>{count}</Badge>
-      );
+      return <Badge variant={count > 0 ? "secondary" : "outline"}>{count}</Badge>;
     },
     enableColumnFilter: false,
   },
@@ -120,11 +154,11 @@ export const columns: ColumnDef<Plan>[] = [
     id: "monthlyCost",
     accessorKey: "monthlyCost",
     header: ({ column }: { column: Column<Plan> }) => (
-      <DataTableColumnHeader column={column} title="Costo mensual" />
+      <DataTableColumnHeader column={column} title="Monto de cobro" />
     ),
     cell: ({ row }) => formatCurrency(row.original.monthlyCost),
     meta: {
-      label: "Costo mensual",
+      label: "Monto de cobro",
       variant: "price",
     },
     enableColumnFilter: true,

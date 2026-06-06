@@ -1,3 +1,5 @@
+import type { Benefit } from "./benefits";
+
 export enum PlanType {
   FAMILY = "FAMILY",
   CORPORATE = "CORPORATE",
@@ -20,16 +22,46 @@ export const PlanStatusLabels: Record<PlanStatus, string> = {
   [PlanStatus.INACTIVE]: "Inactivo",
 };
 
-export interface PlanBenefits {
-  telemedicine: boolean;
-  medicationDelivery: boolean;
-  ambulanceTransfer: boolean;
-  homeCare: boolean;
-  workplaceCare: boolean;
-  emergencyRoom: boolean;
-  specializedConsultations: boolean;
-  labTests: boolean;
-  notes?: string;
+export enum PlanBillingPeriod {
+  MONTHLY = "MONTHLY",
+  QUARTERLY = "QUARTERLY",
+  SEMIANNUAL = "SEMIANNUAL",
+  ANNUAL = "ANNUAL",
+}
+
+export const PlanBillingPeriodLabels: Record<PlanBillingPeriod, string> = {
+  [PlanBillingPeriod.MONTHLY]: "Mensual",
+  [PlanBillingPeriod.QUARTERLY]: "Trimestral",
+  [PlanBillingPeriod.SEMIANNUAL]: "Semestral",
+  [PlanBillingPeriod.ANNUAL]: "Anual",
+};
+
+export enum PlanBenefitValueType {
+  QUANTITY = "QUANTITY",
+  DISCOUNT = "DISCOUNT",
+}
+
+export const PlanBenefitValueTypeLabels: Record<PlanBenefitValueType, string> = {
+  [PlanBenefitValueType.QUANTITY]: "Cantidad",
+  [PlanBenefitValueType.DISCOUNT]: "Descuento",
+};
+
+export interface PlanBenefit {
+  id?: string;
+  benefitId: string;
+  benefit: Benefit;
+  valueType: PlanBenefitValueType;
+  quantity?: number | null;
+  isUnlimited: boolean;
+  discountPercentage?: string | null;
+}
+
+export interface CreatePlanBenefitDTO {
+  benefitId: string;
+  valueType: PlanBenefitValueType;
+  quantity?: number;
+  isUnlimited: boolean;
+  discountPercentage?: string;
 }
 
 export interface Plan {
@@ -37,9 +69,13 @@ export interface Plan {
   name: string;
   description?: string | null;
   planType: PlanType;
-  benefits: PlanBenefits;
+  billingPeriod: PlanBillingPeriod;
+  benefitsNotes?: string | null;
+  planBenefits?: PlanBenefit[];
   status: PlanStatus;
   monthlyCost?: number | null;
+  activeSubscriptionsCount?: number;
+  benefitsCount?: number;
   createdAt: string;
   updatedAt?: string | null;
 }
@@ -50,7 +86,9 @@ export interface CreatePlanDTO {
   name: string;
   description?: string;
   planType: PlanType;
-  benefits: PlanBenefits;
+  billingPeriod: PlanBillingPeriod;
+  benefitsNotes?: string;
+  planBenefits: CreatePlanBenefitDTO[];
   status?: PlanStatus;
   monthlyCost?: string;
 }
@@ -64,6 +102,7 @@ export interface PlanListFilters {
   description?: string;
   status?: PlanStatus[];
   planType?: PlanType[];
+  billingPeriod?: PlanBillingPeriod[];
   monthlyCostMin?: number;
   monthlyCostMax?: number;
   sortBy?: string;

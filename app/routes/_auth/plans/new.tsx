@@ -3,7 +3,7 @@ import PlanForm from "~/features/plans/plan-form";
 
 export default function CreatePlanPage() {
   return (
-    <PageContainer scrollable>
+    <PageContainer scrollable={false}>
       <div className="flex-1 space-y-4">
         <PlanForm initialData={null} pageTitle="Crear plan" />
       </div>

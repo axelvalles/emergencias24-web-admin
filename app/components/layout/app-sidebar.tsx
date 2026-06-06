@@ -35,6 +35,7 @@ import {
 } from "@tabler/icons-react";
 import { Link, useLocation } from "react-router";
 import { Button } from "../ui/button";
+import { canAccessRole } from "~/lib/access-control";
 import { useAuthStore } from "~/store/useAuthStore";
 import { navItems } from "./nav-items";
 import { Icons, SiameLogo, SiameLogoLarge } from "../icons";
@@ -50,6 +51,12 @@ export default function AppSidebar() {
   const { pathname } = useLocation();
   const { user, logout } = useAuthStore();
   const { open } = useSidebar();
+  const visibleNavItems = navItems.filter((item) =>
+    canAccessRole(user?.role, item.allowedRoles)
+  );
+
+  const isPathActive = (url: string) =>
+    pathname === url || pathname.startsWith(`${url}/`);
 
   return (
     <Sidebar collapsible="icon">
@@ -57,8 +64,8 @@ export default function AppSidebar() {
       <SidebarContent className="overflow-x-hidden">
         <SidebarGroup>
           <SidebarGroupLabel>General</SidebarGroupLabel>
-          <SidebarMenu>
-            {navItems.map((item) => {
+            <SidebarMenu>
+            {visibleNavItems.map((item) => {
               const Icon = item.icon ? Icons[item.icon] : Icons.logo;
               return item?.items && item?.items?.length > 0 ? (
                 <Collapsible
@@ -69,10 +76,10 @@ export default function AppSidebar() {
                 >
                   <SidebarMenuItem>
                     <CollapsibleTrigger asChild>
-                      <SidebarMenuButton
-                        tooltip={item.title}
-                        isActive={pathname === item.url}
-                      >
+                        <SidebarMenuButton
+                          tooltip={item.title}
+                          isActive={isPathActive(item.url)}
+                        >
                         {item.icon && <Icon />}
                         <span>{item.title}</span>
                         <IconChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -82,10 +89,10 @@ export default function AppSidebar() {
                       <SidebarMenuSub>
                         {item.items?.map((subItem) => (
                           <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={pathname === subItem.url}
-                            >
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={isPathActive(subItem.url)}
+                              >
                               <Link to={subItem.url}>
                                 <span>{subItem.title}</span>
                               </Link>
@@ -98,11 +105,11 @@ export default function AppSidebar() {
                 </Collapsible>
               ) : (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip={item.title}
-                    isActive={pathname === item.url}
-                  >
+                    <SidebarMenuButton
+                      asChild
+                      tooltip={item.title}
+                      isActive={isPathActive(item.url)}
+                    >
                     <Link to={item.url}>
                       <Icon />
                       <span>{item.title}</span>

@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { DataTableSkeleton } from "~/components/ui/table/data-table-skeleton";
 import { useDebouncedCallback } from "~/hooks/use-debounced-callback";
 import { getErrorMessage, planApi } from "~/http/api-server";
-import { PlanStatus, PlanType } from "~/types/plans";
+import { PlanBillingPeriod, PlanStatus, PlanType } from "~/types/plans";
 import type { PlanListFilters } from "~/types/plans";
 import { PlanTable } from "./plan-tables";
 import { columns } from "./plan-tables/columns";
@@ -54,6 +54,10 @@ export default function PlanListingPage() {
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
   const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
   const [planType] = useQueryState("planType", parseAsArrayOf(parseAsString));
+  const [billingPeriod] = useQueryState(
+    "billingPeriod",
+    parseAsArrayOf(parseAsString)
+  );
   const [status] = useQueryState("status", parseAsArrayOf(parseAsString));
   const [monthlyCost] = useQueryState("monthlyCost", parseAsString);
   const [sort] = useQueryState("sort", parseAsJson(sortSchema));
@@ -69,6 +73,10 @@ export default function PlanListingPage() {
 
   const statusFilters = toEnumArray(status, Object.values(PlanStatus));
   const planTypeFilters = toEnumArray(planType, Object.values(PlanType));
+  const billingPeriodFilters = toEnumArray(
+    billingPeriod,
+    Object.values(PlanBillingPeriod)
+  );
   const priceFilters = parsePriceRange(monthlyCost);
 
   const filters: PlanListFilters = {
@@ -77,6 +85,7 @@ export default function PlanListingPage() {
     ...(search.trim() ? { q: search.trim() } : {}),
     ...(statusFilters ? { status: statusFilters } : {}),
     ...(planTypeFilters ? { planType: planTypeFilters } : {}),
+    ...(billingPeriodFilters ? { billingPeriod: billingPeriodFilters } : {}),
     ...priceFilters,
     ...(sortBy ? { sortBy } : {}),
     ...(sortOrder ? { sortOrder: sortOrder as "ASC" | "DESC" } : {}),

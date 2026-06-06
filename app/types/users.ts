@@ -1,10 +1,12 @@
 // User Management Interfaces
 export enum UserRole {
+  SUPER_ADMIN = "super-admin",
   ADMIN = "admin",
   OPERATOR = "operator",
 }
 
 export const UserRoleLabels = {
+  [UserRole.SUPER_ADMIN]: "Super administrador",
   [UserRole.ADMIN]: "Administrador",
   [UserRole.OPERATOR]: "Operador",
 } as const;

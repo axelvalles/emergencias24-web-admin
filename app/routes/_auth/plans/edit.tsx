@@ -24,7 +24,9 @@ export default function EditPlanPage() {
   }
 
   if (isLoading) {
-    return <div className="p-6 text-sm text-muted-foreground">Cargando plan...</div>;
+    return (
+      <div className="p-6 text-sm text-muted-foreground">Cargando plan...</div>
+    );
   }
 
   if (!plan) {
@@ -32,7 +34,7 @@ export default function EditPlanPage() {
   }
 
   return (
-    <PageContainer scrollable>
+    <PageContainer scrollable={false}>
       <div className="flex-1 space-y-4">
         <PlanForm initialData={plan} pageTitle="Editar plan" />
       </div>
