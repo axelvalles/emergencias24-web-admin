@@ -51,6 +51,7 @@ export const navItems: NavItem[] = [
     icon: "patient",
     shortcut: ["p", "p"],
     isActive: false,
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER],
     items: [], // No child items
   },
   {
@@ -59,6 +60,7 @@ export const navItems: NavItem[] = [
     icon: "plans",
     shortcut: ["l", "l"],
     isActive: false,
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER],
     items: [],
   },
   {
@@ -67,6 +69,7 @@ export const navItems: NavItem[] = [
     icon: "benefits",
     shortcut: ["b", "f"],
     isActive: false,
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER],
     items: [],
   },
   {
@@ -75,6 +78,7 @@ export const navItems: NavItem[] = [
     icon: "subscriptions",
     shortcut: ["s", "s"],
     isActive: false,
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER],
     items: [],
   },
   {
@@ -83,6 +87,7 @@ export const navItems: NavItem[] = [
     icon: "companies",
     shortcut: ["c", "c"],
     isActive: false,
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER],
     items: [],
   },
   {
@@ -91,6 +96,7 @@ export const navItems: NavItem[] = [
     icon: "ticket",
     shortcut: ["t", "t"],
     isActive: false,
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.AMBULANCE],
     items: [], // No child items
   },
   {
@@ -108,6 +114,16 @@ export const navItems: NavItem[] = [
     icon: "users",
     shortcut: ["u", "u"],
     isActive: false,
+    allowedRoles: [UserRole.ADMIN],
     items: [], // No child items
+  },
+  {
+    title: "Unidades",
+    url: "/unidades-ambulancia",
+    icon: "users",
+    shortcut: ["u", "a"],
+    isActive: false,
+    allowedRoles: [UserRole.ADMIN],
+    items: [],
   },
 ];

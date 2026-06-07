@@ -1,14 +1,18 @@
 // User Management Interfaces
+import type { AmbulanceUnit } from "./ambulance-units";
+
 export enum UserRole {
   SUPER_ADMIN = "super-admin",
   ADMIN = "admin",
-  OPERATOR = "operator",
+  DISPATCHER = "dispatcher",
+  AMBULANCE = "ambulance",
 }
 
 export const UserRoleLabels = {
   [UserRole.SUPER_ADMIN]: "Super administrador",
   [UserRole.ADMIN]: "Administrador",
-  [UserRole.OPERATOR]: "Operador",
+  [UserRole.DISPATCHER]: "Central",
+  [UserRole.AMBULANCE]: "Ambulancia",
 } as const;
 
 export enum UserStatus {
@@ -28,6 +32,8 @@ export interface User {
   updatedAt: Date;
   lastLogin: Date | null;
   fullName: string;
+  ambulanceUnits: AmbulanceUnit[];
+  activeAmbulanceUnit: AmbulanceUnit | null;
 }
 
 export interface CreateUserDTO {
@@ -37,6 +43,7 @@ export interface CreateUserDTO {
   firstName: string;
   lastName: string;
   phone?: string;
+  ambulanceUnitIds?: string[];
 }
 
 export interface UpdateUserDTO {
@@ -47,6 +54,7 @@ export interface UpdateUserDTO {
   lastName?: string;
   phone?: string;
   status?: UserStatus;
+  ambulanceUnitIds?: string[];
 }
 
 export interface LoginDTO {

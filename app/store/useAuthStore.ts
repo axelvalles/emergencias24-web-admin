@@ -9,6 +9,7 @@ interface AuthState {
   login: (loginResponse: LoginResponse) => void;
   logout: () => void;
   refreshToken: (newToken: string) => void;
+  setUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -35,6 +36,12 @@ export const useAuthStore = create<AuthState>()(
         set((state) => ({
           ...state,
           token: newToken,
+        }));
+      },
+      setUser: (user: User) => {
+        set((state) => ({
+          ...state,
+          user,
         }));
       },
     }),

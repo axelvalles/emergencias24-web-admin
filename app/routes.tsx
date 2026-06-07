@@ -16,6 +16,11 @@ export default [
       route("/editar/:id", "./routes/_auth/users/edit.tsx"),
     ]),
 
+    route(
+      "unidades-ambulancia",
+      "./routes/_auth/ambulance-units/ambulance-units.tsx"
+    ),
+
     ...prefix("pacientes", [
       index("./routes/_auth/patients/patients.tsx"),
       route("nuevo", "./routes/_auth/patients/new.tsx"),

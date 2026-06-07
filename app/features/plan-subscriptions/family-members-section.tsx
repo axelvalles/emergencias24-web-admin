@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { IconPlus, IconTrash, IconUsers } from "@tabler/icons-react";
@@ -21,7 +21,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import { FormInput } from "~/components/forms/form-input";
 import { Form } from "~/components/ui/form";
 import { LoadingButton } from "~/components/ui/loading-button";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -48,6 +47,7 @@ import {
   PlanSubscriptionStatusLabels,
   FamilyMemberAssignmentErrorCode,
 } from "~/types/plan-subscriptions";
+import { FamilyMemberPatientCombobox } from "./family-member-patient-combobox";
 
 const manageAssignFamilyMemberErrors = (error: unknown) => {
   const result = parseApiError(error);
@@ -255,6 +255,17 @@ export default function FamilyMembersSection({
     await assignMutation.mutateAsync(values);
   };
 
+  useEffect(() => {
+    if (!dialogOpen && !assignMutation.isPending) {
+      form.reset();
+    }
+  }, [assignMutation.isPending, dialogOpen, form]);
+
+  const excludedPatientIds = [
+    subscription.patient.id,
+    ...(familyMembers?.map((member) => member.patient.id) ?? []),
+  ];
+
   return (
     <Card>
       <CardHeader>
@@ -274,23 +285,28 @@ export default function FamilyMembersSection({
               </Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Agregar familiar al plan</DialogTitle>
-                <DialogDescription>
-                  Ingresa el número de documento del familiar para agregarlo a
-                  este plan.
-                </DialogDescription>
-              </DialogHeader>
+                <DialogHeader>
+                  <DialogTitle>Agregar familiar al plan</DialogTitle>
+                  <DialogDescription>
+                    Busca el paciente por nombre o documento y agrégalo a este
+                    plan.
+                  </DialogDescription>
+                </DialogHeader>
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(handleSubmit)}
                   className="space-y-4"
                 >
-                  <FormInput
+                  <FamilyMemberPatientCombobox
                     control={form.control}
                     name="familyMemberDocumentNumber"
-                    label="Número de documento"
+                    label="Paciente"
+                    placeholder="Selecciona un paciente"
+                    searchPlaceholder="Buscar por nombre o documento..."
+                    emptyMessage="No se encontraron pacientes elegibles"
+                    description="Se excluyen el titular y los familiares ya agregados."
                     disabled={assignMutation.isPending}
+                    excludedPatientIds={excludedPatientIds}
                     required
                   />
                   <DialogFooter>

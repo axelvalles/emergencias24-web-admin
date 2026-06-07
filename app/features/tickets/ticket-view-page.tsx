@@ -36,6 +36,8 @@ import { isValidCoordinates } from "~/lib/validate-coordinates";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "~/lib/utils";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { useAuthStore } from "~/store/useAuthStore";
+import { UserRole } from "~/types/users";
 
 const STATUS_FLOW = [
   { status: TicketStatus.PENDING, label: "Pendiente", icon: IconCircle },
@@ -95,9 +97,23 @@ function getStatusBadgeVariant(status: TicketStatus) {
   }
 }
 
+function formatPhoneForDisplay(phone?: string | null) {
+  if (!phone) {
+    return "No especificado";
+  }
+
+  return phone.replace(/^whatsapp:/i, "");
+}
+
+function buildNavigationUrl(location: string) {
+  const destination = encodeURIComponent(location.trim());
+  return `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+}
+
 export default function TicketViewPage() {
   const { referenceNumber } = useParams();
   const navigate = useNavigate();
+  const currentUser = useAuthStore((state) => state.user);
 
   const [actionDialog, setActionDialog] = useState<{
     action: TicketAction;
@@ -145,26 +161,37 @@ export default function TicketViewPage() {
 
   const currentStep = getStatusStep(ticket.status);
   const isCanceled = ticket.status === TicketStatus.CANCELED;
+  const canAssignTicket =
+    currentUser?.role === UserRole.ADMIN ||
+    currentUser?.role === UserRole.DISPATCHER;
+  const canCancelTicket = canAssignTicket;
+  const isAssignedToCurrentAmbulance =
+    currentUser?.role === UserRole.AMBULANCE &&
+    ticket.assignedUnit?.id === currentUser.activeAmbulanceUnit?.id;
+  const canAdvanceTicket =
+    currentUser?.role === UserRole.ADMIN ||
+    currentUser?.role === UserRole.DISPATCHER ||
+    isAssignedToCurrentAmbulance;
 
   return (
     <PageContainer scrollable={false}>
       <div>
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3 flex items-center justify-between gap-3">
           <Button variant="outline" onClick={() => navigate("/tickets")}>
             <IconArrowLeft className="mr-2 h-4 w-4" />
             Volver
           </Button>
         </div>
 
-        <div className="flex gap-6 h-full">
-          <div className="flex-1 space-y-6 overflow-y-auto">
+        <div className="flex h-full flex-col gap-6 lg:flex-row">
+          <div className="min-w-0 flex-1 space-y-6 overflow-y-auto">
             <div className="space-y-6">
               <Card className="border-t-4 border-t-primary overflow-hidden">
                 <CardContent className="p-6">
                   <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-bold tracking-tight">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                           #{ticket.referenceNumber}
                         </h1>
                         <Badge variant={getStatusBadgeVariant(ticket.status)}>
@@ -176,7 +203,7 @@ export default function TicketViewPage() {
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <IconClock className="h-4 w-4" />
                           Creado{" "}
@@ -189,11 +216,11 @@ export default function TicketViewPage() {
                       </div>
                     </div>
 
-                    {ticket.assignedUser && (
-                      <div className="flex items-center gap-3 bg-muted/50 px-4 py-3 rounded-lg">
+                    {ticket.assignedUnit && (
+                      <div className="flex w-full items-center gap-3 rounded-lg bg-muted/50 px-4 py-3 lg:max-w-xs">
                         <Avatar>
                           <AvatarFallback className="bg-primary/10 text-primary">
-                            {ticket.assignedUser.fullName
+                            {ticket.assignedUnit.name
                               .split(" ")
                               .map((n) => n[0])
                               .join("")
@@ -203,7 +230,7 @@ export default function TicketViewPage() {
                         </Avatar>
                         <div>
                           <p className="font-medium">
-                            {ticket.assignedUser.fullName}
+                            {ticket.assignedUnit.name}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             Asignado{" "}
@@ -219,7 +246,7 @@ export default function TicketViewPage() {
 
                   {!isCanceled && (
                     <div className="mt-6">
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                         <span className="text-sm font-medium">
                           Progreso del Ticket
                         </span>
@@ -227,19 +254,20 @@ export default function TicketViewPage() {
                           Paso {currentStep + 1} de {STATUS_FLOW.length}
                         </span>
                       </div>
-                      <div className="flex items-center">
+                      <div className="overflow-x-auto pb-2">
+                        <div className="flex min-w-[32rem] items-center">
                         {STATUS_FLOW.map((step, index) => {
                           const Icon = step.icon;
                           const isCompleted = index < currentStep;
                           const isCurrent = index === currentStep;
                           const isLast = index === STATUS_FLOW.length - 1;
 
-                          return (
-                            <div
-                              key={step.status}
-                              className="flex items-center flex-1"
-                            >
-                              <div className="flex flex-col items-center">
+                            return (
+                              <div
+                                key={step.status}
+                                className="flex flex-1 items-center"
+                              >
+                                <div className="flex flex-col items-center">
                                 <div
                                   className={cn(
                                     "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all",
@@ -275,13 +303,14 @@ export default function TicketViewPage() {
                             </div>
                           );
                         })}
+                        </div>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              <div className="grid gap-6 md:grid-cols-2">
+              <div className="grid gap-6 xl:grid-cols-2">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">
@@ -289,7 +318,7 @@ export default function TicketViewPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <label className="text-xs font-medium text-muted-foreground">
                           Nombre
@@ -300,16 +329,27 @@ export default function TicketViewPage() {
                         <label className="text-xs font-medium text-muted-foreground">
                           Teléfono
                         </label>
-                        <p className="font-medium">{ticket.requesterPhone}</p>
+                        <p className="break-all font-medium">
+                          {formatPhoneForDisplay(ticket.requesterPhone)}
+                        </p>
                       </div>
                     </div>
                     {ticket.location &&
                       !isValidCoordinates(ticket.location) && (
-                        <div>
+                        <div className="space-y-2">
                           <label className="text-xs font-medium text-muted-foreground">
                             Ubicación
                           </label>
-                          <p className="text-sm">{ticket.municipality}</p>
+                          <p className="text-sm">{ticket.location}</p>
+                          <Button asChild variant="outline" size="sm">
+                            <a
+                              href={buildNavigationUrl(ticket.location)}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Abrir ruta
+                            </a>
+                          </Button>
                         </div>
                       )}
                     <div>
@@ -330,7 +370,7 @@ export default function TicketViewPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <label className="text-xs font-medium text-muted-foreground">
                           Tipo de Servicio
@@ -348,7 +388,7 @@ export default function TicketViewPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
                         <label className="text-xs font-medium text-muted-foreground">
                           Municipio
@@ -372,8 +412,17 @@ export default function TicketViewPage() {
 
               {ticket.location && isValidCoordinates(ticket.location) && (
                 <Card>
-                  <CardHeader>
+                  <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <CardTitle className="text-base">Ubicación</CardTitle>
+                    <Button asChild variant="outline" size="sm">
+                      <a
+                        href={buildNavigationUrl(ticket.location)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Abrir ruta
+                      </a>
+                    </Button>
                   </CardHeader>
                   <CardContent>
                     <LocationDisplay
@@ -390,15 +439,16 @@ export default function TicketViewPage() {
             </div>
           </div>
 
-          <div className="w-80 shrink-0">
-            <div className="sticky top-6 space-y-6">
+          <div className="w-full shrink-0 lg:w-80">
+            <div className="space-y-6 lg:sticky lg:top-6">
               <Card className="">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Acciones</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-2">
-                  {(ticket.status === TicketStatus.PENDING ||
-                    ticket.status === TicketStatus.ASSIGNED) && (
+                  {canAssignTicket &&
+                    (ticket.status === TicketStatus.PENDING ||
+                      ticket.status === TicketStatus.ASSIGNED) && (
                     <Button
                       variant="outline"
                       className="w-full justify-start h-10"
@@ -411,7 +461,7 @@ export default function TicketViewPage() {
                     </Button>
                   )}
 
-                  {ticket.status === TicketStatus.ASSIGNED && (
+                  {canAdvanceTicket && ticket.status === TicketStatus.ASSIGNED && (
                     <Button
                       variant="default"
                       className="w-full justify-start h-10"
@@ -424,7 +474,7 @@ export default function TicketViewPage() {
                     </Button>
                   )}
 
-                  {ticket.status === TicketStatus.IN_PROGRESS && (
+                  {canAdvanceTicket && ticket.status === TicketStatus.IN_PROGRESS && (
                     <Button
                       variant="default"
                       className="w-full justify-start h-10 bg-green-600 hover:bg-green-700"
@@ -437,7 +487,9 @@ export default function TicketViewPage() {
                     </Button>
                   )}
 
-                  {!isCanceled && ticket.status !== TicketStatus.COMPLETED && (
+                  {canCancelTicket &&
+                    !isCanceled &&
+                    ticket.status !== TicketStatus.COMPLETED && (
                     <Button
                       variant="outline"
                       className="w-full justify-start h-10 text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -469,24 +521,24 @@ export default function TicketViewPage() {
                   <CardTitle className="text-base">Resumen</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                  <div className="flex justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">Estado</span>
                     <Badge variant={getStatusBadgeVariant(ticket.status)}>
                       {TicketStatusLabels[ticket.status]}
                     </Badge>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">Prioridad</span>
                     <Badge variant={getPriorityVariant(ticket.priority)}>
                       {TicketPriorityLabels[ticket.priority]}
                     </Badge>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">Creado</span>
                     <span>{format(ticket.createdAt, "dd/MM/yyyy")}</span>
                   </div>
                   {ticket.completedAt && (
-                    <div className="flex justify-between">
+                    <div className="flex items-center justify-between gap-3">
                       <span className="text-muted-foreground">Completado</span>
                       <span>{format(ticket.completedAt, "dd/MM/yyyy")}</span>
                     </div>

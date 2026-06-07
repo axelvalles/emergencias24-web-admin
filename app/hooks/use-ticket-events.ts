@@ -14,6 +14,9 @@ type TicketEvent = {
 export function useTicketEvents() {
   const addTicket = useTicketStore((state) => state.addTicket);
   const token = useAuthStore((state) => state.token);
+  const activeAmbulanceUnitId = useAuthStore(
+    (state) => state.user?.activeAmbulanceUnit?.id
+  );
 
   useEffect(() => {
     if (!token) {
@@ -66,6 +69,37 @@ export function useTicketEvents() {
       });
     });
 
+    socket.on("ticket.assigned", async (event: TicketEvent) => {
+      console.log("👤 Ticket asignado:", event);
+
+      useTicketStore.getState().updateTicket(event.ticket);
+      showNotification(event.ticket, "Ticket asignado");
+
+      await queryClient.refetchQueries({
+        queryKey: ["tickets"],
+      });
+    });
+
+    socket.on("ticket.completed", async (event: TicketEvent) => {
+      console.log("✅ Ticket completado:", event);
+
+      useTicketStore.getState().updateTicket(event.ticket);
+
+      await queryClient.refetchQueries({
+        queryKey: ["tickets"],
+      });
+    });
+
+    socket.on("ticket.cancelled", async (event: TicketEvent) => {
+      console.log("🚫 Ticket cancelado:", event);
+
+      useTicketStore.getState().updateTicket(event.ticket);
+
+      await queryClient.refetchQueries({
+        queryKey: ["tickets"],
+      });
+    });
+
     // Evento: desconexión
     socket.on("disconnect", () => {
       console.warn("⚠️ Desconectado del WebSocket");
@@ -76,10 +110,13 @@ export function useTicketEvents() {
       socket.disconnect();
       socket.off("ticket.created");
       socket.off("ticket.updated");
+      socket.off("ticket.assigned");
+      socket.off("ticket.completed");
+      socket.off("ticket.cancelled");
       socket.off("connect");
       socket.off("disconnect");
     };
-  }, [addTicket, token]);
+  }, [activeAmbulanceUnitId, addTicket, token]);
 }
 
 // Reproduce un sonido de alerta cuando llega un ticket nuevo
@@ -93,10 +130,10 @@ function playAlertSound() {
 }
 
 // Muestra una notificación de escritorio
-function showNotification(ticket: Ticket) {
+function showNotification(ticket: Ticket, title = "Nuevo Ticket de Emergencia") {
   console.log("showNotification", ticket);
   if (Notification.permission === "granted") {
-    new Notification("🚨 Nuevo Ticket de Emergencia", {
+    new Notification(`🚨 ${title}`, {
       body: `${ticket.requesterName} - ${TicketTypeLabels[ticket.serviceType] || "Sin tipo"}`,
       icon: "/icons/alert.png", // opcional, si tienes un ícono en /public/icons
     });

@@ -19,6 +19,8 @@ import {
   TicketStatus,
   TicketType,
 } from "~/types/tickets";
+import { useAuthStore } from "~/store/useAuthStore";
+import { UserRole } from "~/types/users";
 
 const sortSchema = z.array(z.object({ id: z.string(), desc: z.boolean() }));
 
@@ -38,6 +40,7 @@ const toEnumArray = <T extends string>(
 };
 
 export default function TicketListingPage() {
+  const user = useAuthStore((state) => state.user);
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
   const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
@@ -68,6 +71,10 @@ export default function TicketListingPage() {
     status: toEnumArray(status, Object.values(TicketStatus)),
     priority: (priority as TicketPriority) || undefined,
     municipality: municipality || undefined,
+    assignedUnitId:
+      user?.role === UserRole.AMBULANCE
+        ? user.activeAmbulanceUnit?.id ?? undefined
+        : undefined,
     referenceNumber: referenceNumber ? Number(referenceNumber) : undefined,
     sortBy,
     sortOrder: sortOrder as "ASC" | "DESC",

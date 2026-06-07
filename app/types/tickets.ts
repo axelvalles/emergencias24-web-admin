@@ -1,5 +1,5 @@
 import type { PatientDetail } from "./patients";
-import type { User } from "./users";
+import type { AmbulanceUnit } from "./ambulance-units";
 
 export enum TicketType {
   IMMEDIATE_ATTENTION = "immediate_attention",
@@ -8,6 +8,7 @@ export enum TicketType {
   MEDICAL_CONSULTATION = "medical_consultation",
   LABORATORY = "laboratory",
   AMBULANCE = "ambulance",
+  STUDY_TRANSFER = "study_transfer",
   EQUIPMENT_RENTAL = "equipment_rental",
   APPOINTMENT = "appointment",
   PLANS = "plans",
@@ -20,6 +21,7 @@ export const TicketTypeLabels = {
   [TicketType.MEDICAL_CONSULTATION]: "Consulta médica",
   [TicketType.LABORATORY]: "Laboratorio",
   [TicketType.AMBULANCE]: "Ambulancia",
+  [TicketType.STUDY_TRANSFER]: "Realización de estudios",
   [TicketType.EQUIPMENT_RENTAL]: "Alquiler de equipo",
   [TicketType.APPOINTMENT]: "Cita",
   [TicketType.PLANS]: "Planes",
@@ -67,7 +69,7 @@ export interface Ticket {
   speciality: string | null;
   description: string;
   note: string | null;
-  assignedUser: User | null;
+  assignedUnit: AmbulanceUnit | null;
   assignedAt: Date | null;
   completedAt: Date | null;
   createdAt: Date;
@@ -76,13 +78,14 @@ export interface Ticket {
 
 // types server
 export interface QueryTicketsParams {
+  q?: string;
   serviceType?: TicketType[];
   status?: TicketStatus[];
   priority?: TicketPriority;
   requesterPhone?: string;
   requesterName?: string;
   municipality?: string;
-  assignedTo?: string;
+  assignedUnitId?: string;
   referenceNumber?: number;
   createdFrom?: Date;
   createdTo?: Date;

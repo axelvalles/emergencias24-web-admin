@@ -77,3 +77,4 @@ export { planSubscriptionApi } from "./plan-subscription-api";
 export { companyApi } from "./company-api";
 export { municipalityPricingApi } from "./municipality-pricing-api";
 export { benefitApi } from "./benefit-api";
+export { ambulanceUnitApi } from "./ambulance-unit-api";

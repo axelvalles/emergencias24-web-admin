@@ -6,6 +6,7 @@ import { Breadcrumbs } from "../breadcrumbs";
 import { UserNav } from "./user-nav";
 import { ModeToggle } from "./ThemeToggle/theme-toggle";
 import { NotificationBell } from "../notification-bell";
+import ActiveAmbulanceUnitSelector from "./active-ambulance-unit-selector";
 // import { SoundToggle } from "../sound-toggle";
 
 export default function Header() {
@@ -18,6 +19,7 @@ export default function Header() {
       </div>
 
       <div className="flex items-center gap-3 px-4">
+        <ActiveAmbulanceUnitSelector />
         <NotificationBell />
         {/* <SoundToggle /> */}
         <ModeToggle />

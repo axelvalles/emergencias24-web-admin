@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ticketApi, userApi } from "~/http/api-server";
+import { ambulanceUnitApi, ticketApi } from "~/http/api-server";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useParams } from "react-router";
-import type { User } from "~/types/users";
+import type { AmbulanceUnit } from "~/types/ambulance-units";
 import { cn } from "~/lib/utils";
 
 export type TicketAction = "assign" | "start" | "complete" | "cancel";
@@ -52,7 +52,7 @@ interface ActionConfig {
 const actionConfigs: Record<TicketAction, ActionConfig> = {
   assign: {
     title: "Asignar Ticket",
-    description: "Seleccione el usuario y añada un comentario opcional.",
+    description: "Seleccione la unidad y añada un comentario opcional.",
     confirmText: "ASIGNAR",
     variant: "default",
     icon: IconUser,
@@ -91,12 +91,15 @@ export default function TicketActionDialog({
   const queryClient = useQueryClient();
   const config = actionConfigs[action];
 
-  const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedAmbulanceUnitId, setSelectedAmbulanceUnitId] = useState("");
   const [comment, setComment] = useState("");
 
-  const { data: users = [], isLoading: isLoadingUsers } = useQuery({
-    queryKey: ["users-search"],
-    queryFn: () => userApi.searchUsers({ limit: 50 }),
+  const { data: ambulanceUnits = [], isLoading: isLoadingUnits } = useQuery({
+    queryKey: ["ambulance-units-search"],
+    queryFn: () =>
+      ambulanceUnitApi.searchUnits({
+        limit: 50,
+      }),
     enabled: action === "assign",
   });
 
@@ -106,7 +109,7 @@ export default function TicketActionDialog({
         case "assign":
           return ticketApi.assignTicket(
             ticketId,
-            selectedUserId,
+            selectedAmbulanceUnitId,
             comment || undefined,
           );
         case "start":
@@ -125,6 +128,9 @@ export default function TicketActionDialog({
       queryClient.invalidateQueries({
         queryKey: ["ticket-history", ticketId],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["tickets"],
+      });
       resetAndClose();
     },
     onError: (error) => {
@@ -134,14 +140,14 @@ export default function TicketActionDialog({
   });
 
   const resetAndClose = () => {
-    setSelectedUserId("");
+    setSelectedAmbulanceUnitId("");
     setComment("");
     onOpenChange(false);
   };
 
   const handleConfirm = () => {
-    if (action === "assign" && !selectedUserId) {
-      toast.error("Seleccione un usuario");
+    if (action === "assign" && !selectedAmbulanceUnitId) {
+      toast.error("Seleccione una unidad");
       return;
     }
     actionMutation.mutate();
@@ -182,15 +188,22 @@ export default function TicketActionDialog({
         <div className="space-y-4 py-4">
           {action === "assign" && (
             <div className="space-y-2">
-              <Label htmlFor="user">Usuario</Label>
-              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                <SelectTrigger id="user" className="w-full">
-                  <SelectValue placeholder="Seleccionar usuario" />
-                </SelectTrigger>
+              <Label htmlFor="user">Unidad</Label>
+                <Select
+                  value={selectedAmbulanceUnitId}
+                  onValueChange={setSelectedAmbulanceUnitId}
+                >
+                  <SelectTrigger id="user" className="w-full">
+                    <SelectValue
+                      placeholder={
+                        isLoadingUnits ? "Cargando unidades..." : "Seleccionar unidad"
+                      }
+                    />
+                  </SelectTrigger>
                 <SelectContent>
-                  {users.map((user: User) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.fullName}
+                  {ambulanceUnits.map((ambulanceUnit: AmbulanceUnit) => (
+                    <SelectItem key={ambulanceUnit.id} value={ambulanceUnit.id}>
+                      {ambulanceUnit.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -232,7 +245,7 @@ export default function TicketActionDialog({
             variant={config.variant}
             onClick={handleConfirm}
             loading={isLoading}
-            disabled={isLoading || (action === "assign" && !selectedUserId)}
+            disabled={isLoading || (action === "assign" && !selectedAmbulanceUnitId)}
           >
             {config.confirmText}
           </LoadingButton>

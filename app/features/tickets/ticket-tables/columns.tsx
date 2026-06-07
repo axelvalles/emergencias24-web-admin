@@ -37,6 +37,8 @@ const getTicketTypeIcon = (type: TicketType) => {
       return Heart;
     case TicketType.AMBULANCE:
       return Ambulance;
+    case TicketType.STUDY_TRANSFER:
+      return Ambulance;
     case TicketType.TELEMEDICINE:
       return Phone;
     case TicketType.HOME_CARE:

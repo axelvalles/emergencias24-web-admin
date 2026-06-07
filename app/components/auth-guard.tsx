@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router";
 import { canAccessRole } from "~/lib/access-control";
 import { useAuthStore } from "~/store/useAuthStore";
-import { UserRole } from "~/types/users";
+import type { UserRole } from "~/types/users";
 
 interface AuthGuardProps {
   children: React.ReactNode;

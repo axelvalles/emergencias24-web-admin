@@ -58,10 +58,12 @@ export const ticketApi = {
 
   assignTicket: async (
     id: string,
-    userId: string,
+    ambulanceUnitId: string,
     comment?: string
   ): Promise<ApiResponse<Ticket>> => {
-    return httpClient.patch(`/tickets/${id}/assign/${userId}`, { comment });
+    return httpClient.patch(`/tickets/${id}/assign/${ambulanceUnitId}`, {
+      comment,
+    });
   },
 
   getTicketHistory: async (id: string): Promise<TicketStatusHistory[]> => {

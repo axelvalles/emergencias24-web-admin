@@ -7,7 +7,7 @@ import {
 import { useNavigate } from "react-router";
 import { type FC } from "react";
 import type { Ticket } from "~/types/tickets";
-import { IconEdit } from "@tabler/icons-react";
+import { IconEye } from "@tabler/icons-react";
 import { useTicketStore } from "~/store/useTicketStore";
 
 interface CellActionProps {
@@ -29,10 +29,10 @@ export const CellAction: FC<CellActionProps> = ({ data }) => {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="outline" size="icon" onClick={onEdit}>
-              <IconEdit className="size-4" />
+              <IconEye className="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="bottom">Editar empresa</TooltipContent>
+          <TooltipContent side="bottom">Ver ticket</TooltipContent>
         </Tooltip>
       </div>
     </>
