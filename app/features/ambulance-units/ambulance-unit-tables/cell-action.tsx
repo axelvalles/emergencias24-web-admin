@@ -56,7 +56,7 @@ export const CellAction: FC<CellActionProps> = ({ data }) => {
             <Button
               variant="outline"
               size="icon"
-              onClick={() => navigate(`/ambulance-units/${data.id}/edit`)}
+              onClick={() => navigate(`/unidades-ambulancia/editar/${data.id}`)}
             >
               <IconEdit />
             </Button>

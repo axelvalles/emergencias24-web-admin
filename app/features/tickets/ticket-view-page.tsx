@@ -161,9 +161,10 @@ export default function TicketViewPage() {
 
   const currentStep = getStatusStep(ticket.status);
   const isCanceled = ticket.status === TicketStatus.CANCELED;
-  const canAssignTicket =
+const canAssignTicket =
     currentUser?.role === UserRole.ADMIN ||
-    currentUser?.role === UserRole.DISPATCHER;
+    currentUser?.role === UserRole.DISPATCHER ||
+    currentUser?.role === UserRole.SUPER_ADMIN;
   const canCancelTicket = canAssignTicket;
   const isAssignedToCurrentAmbulance =
     currentUser?.role === UserRole.AMBULANCE &&

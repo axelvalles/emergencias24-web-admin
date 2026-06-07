@@ -14,7 +14,7 @@ export default function AmbulanceUnits() {
         <div className="flex items-start justify-between">
           <Heading title="Unidades de ambulancia" description="Gestiona las unidades de ambulancia." />
           <Link
-            to="/ambulance-units/new"
+            to="/unidades-ambulancia/nuevo"
             className={cn(buttonVariants(), "text-xs md:text-sm")}
           >
             <IconPlus className="mr-2 h-4 w-4" /> Agregar nuevo

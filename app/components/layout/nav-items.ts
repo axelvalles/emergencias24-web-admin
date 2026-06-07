@@ -45,58 +45,58 @@ export const navItems: NavItem[] = [
     shortcut: ["d", "d"],
     items: [], // Empty array as there are no child items for Dashboard
   },
-  {
+{
     title: "Pacientes",
     url: "/pacientes",
     icon: "patient",
     shortcut: ["p", "p"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER],
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [], // No child items
   },
-  {
+{
     title: "Planes",
     url: "/planes",
     icon: "plans",
     shortcut: ["l", "l"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER],
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [],
   },
-  {
+{
     title: "Beneficios",
     url: "/beneficios",
     icon: "benefits",
     shortcut: ["b", "f"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER],
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [],
   },
-  {
+{
     title: "Suscripciones",
     url: "/suscripciones",
     icon: "subscriptions",
     shortcut: ["s", "s"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER],
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [],
   },
-  {
+{
     title: "Empresas",
     url: "/empresas",
     icon: "companies",
     shortcut: ["c", "c"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER],
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [],
   },
-  {
+{
     title: "Tickets",
     url: "/tickets",
     icon: "ticket",
     shortcut: ["t", "t"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.AMBULANCE],
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.AMBULANCE, UserRole.SUPER_ADMIN],
     items: [], // No child items
   },
   {
@@ -108,22 +108,22 @@ export const navItems: NavItem[] = [
     allowedRoles: [UserRole.SUPER_ADMIN],
     items: [],
   },
-  {
+{
     title: "Usuarios",
     url: "/usuarios",
     icon: "users",
     shortcut: ["u", "u"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN],
+    allowedRoles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
     items: [], // No child items
   },
-  {
+{
     title: "Unidades",
     url: "/unidades-ambulancia",
     icon: "users",
     shortcut: ["u", "a"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN],
+    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [],
   },
 ];

@@ -60,7 +60,7 @@ export default function AmbulanceUnitForm({
     onSuccess: async () => {
       toast.success("Unidad creada correctamente");
       await queryClient.invalidateQueries({ queryKey: ["ambulance-units"] });
-      navigate(`/ambulance-units?page=${page}&perPage=${pageSize}`);
+      navigate(`/unidades-ambulancia?page=${page}&perPage=${pageSize}`);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
@@ -80,7 +80,7 @@ export default function AmbulanceUnitForm({
         queryClient.invalidateQueries({ queryKey: ["ambulance-units"] }),
         queryClient.invalidateQueries({ queryKey: ["ambulance-unit", data.id] }),
       ]);
-      navigate(`/ambulance-units?page=${page}&perPage=${pageSize}`);
+      navigate(`/unidades-ambulancia?page=${page}&perPage=${pageSize}`);
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
@@ -143,7 +143,7 @@ export default function AmbulanceUnitForm({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate(`/ambulance-units?page=${page}&perPage=${pageSize}`)}
+                onClick={() => navigate(`/unidades-ambulancia?page=${page}&perPage=${pageSize}`)}
                 disabled={isExecuting}
               >
                 Cancelar
