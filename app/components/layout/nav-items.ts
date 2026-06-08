@@ -120,7 +120,7 @@ export const navItems: NavItem[] = [
 {
     title: "Unidades",
     url: "/unidades-ambulancia",
-    icon: "users",
+    icon: "ambulance",
     shortcut: ["u", "a"],
     isActive: false,
     allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],

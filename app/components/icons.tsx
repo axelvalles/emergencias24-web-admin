@@ -8,6 +8,7 @@ import {
   IconBuilding,
   IconCreditCard,
   IconMenu,
+  IconAmbulance,
 } from "@tabler/icons-react";
 import type { IconProps } from "@tabler/icons-react";
 
@@ -37,4 +38,5 @@ export const Icons = {
   companies: IconBuilding,
   subscriptions: IconCreditCard,
   logo: IconMenu,
+  ambulance: IconAmbulance,
 };
