@@ -17,6 +17,7 @@ import {
   IconCircleCheck,
   IconUserCheck,
   IconClock,
+  IconNavigation,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router";
 import {
@@ -110,6 +111,30 @@ function buildNavigationUrl(location: string) {
   return `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
 }
 
+function buildRouteWithCurrentLocationUrl(location: string) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location.trim())}&travelmode=driving`;
+}
+
+function getCurrentPosition(): Promise<{ lat: number; lng: number }> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Geolocation not supported"));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      (error) => {
+        reject(error);
+      }
+    );
+  });
+}
+
 export default function TicketViewPage() {
   const { referenceNumber } = useParams();
   const navigate = useNavigate();
@@ -122,6 +147,8 @@ export default function TicketViewPage() {
     action: "assign",
     open: false,
   });
+
+  const [isFollowingRoute, setIsFollowingRoute] = useState(false);
 
   const {
     data: ticket,
@@ -217,7 +244,7 @@ const canAssignTicket =
                       </div>
                     </div>
 
-                    {ticket.assignedUnit && (
+{ticket.assignedUnit && (
                       <div className="flex w-full items-center gap-3 rounded-lg bg-muted/50 px-4 py-3 lg:max-w-xs">
                         <Avatar>
                           <AvatarFallback className="bg-primary/10 text-primary">
@@ -229,7 +256,7 @@ const canAssignTicket =
                               .toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <p className="font-medium">
                             {ticket.assignedUnit.name}
                           </p>
@@ -241,6 +268,37 @@ const canAssignTicket =
                               })}
                           </p>
                         </div>
+                        {isAssignedToCurrentAmbulance &&
+                          ticket.location &&
+                          isValidCoordinates(ticket.location) && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="shrink-0"
+                              onClick={async () => {
+                                setIsFollowingRoute(true);
+                                try {
+                                  const position = await getCurrentPosition();
+                                  const url = `https://www.google.com/maps/dir/?api=1&origin=${position.lat},${position.lng}&destination=${encodeURIComponent(ticket.location!)}&travelmode=driving`;
+                                  window.open(url, "_blank");
+                                } catch {
+                                  toast.error(
+                                    "No se pudo obtener tu ubicación. Asegúrate de permitir el acceso a la ubicación."
+                                  );
+                                  window.open(
+                                    buildRouteWithCurrentLocationUrl(ticket.location!),
+                                    "_blank"
+                                  );
+                                } finally {
+                                  setIsFollowingRoute(false);
+                                }
+                              }}
+                              disabled={isFollowingRoute}
+                            >
+                              <IconNavigation className="mr-1 h-4 w-4" />
+                              {isFollowingRoute ? "Obteniendo..." : "Seguir ruta"}
+                            </Button>
+                          )}
                       </div>
                     )}
                   </div>
