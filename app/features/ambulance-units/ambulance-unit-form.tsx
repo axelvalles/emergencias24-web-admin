@@ -1,21 +1,20 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { FormInput } from "~/components/forms/form-input";
-import { FormCheckboxGroup } from "~/components/forms/form-checkbox-group";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Form } from "~/components/ui/form";
 import { LoadingButton } from "~/components/ui/loading-button";
 import { Button } from "~/components/ui/button";
-import { ambulanceUnitApi, getErrorMessage, userApi } from "~/http/api-server";
+import { ambulanceUnitApi, getErrorMessage } from "~/http/api-server";
 import { queryClient } from "~/lib/query-client";
 import type { AmbulanceUnit } from "~/types/ambulance-units";
-import { UserRole } from "~/types/users";
 import { ambulanceUnitFormSchema, type AmbulanceUnitFormSchema } from "./schemas";
+import { MemberSelector } from "./member-selector";
 
 const getDefaultValues = (initialData: AmbulanceUnit | null): AmbulanceUnitFormSchema => ({
   name: initialData?.name ?? "",
@@ -39,15 +38,6 @@ export default function AmbulanceUnitForm({
   const form = useForm<AmbulanceUnitFormSchema>({
     resolver: zodResolver(ambulanceUnitFormSchema),
     defaultValues: getDefaultValues(initialData),
-  });
-
-  const { data: ambulanceUsers = [] } = useQuery({
-    queryKey: ["ambulance-users-search"],
-    queryFn: () =>
-      userApi.searchUsers({
-        limit: 100,
-        role: [UserRole.AMBULANCE],
-      }),
   });
 
   const createMutation = useMutation({
@@ -89,11 +79,6 @@ export default function AmbulanceUnitForm({
 
   const isExecuting = createMutation.isPending || updateMutation.isPending;
 
-  const memberOptions = ambulanceUsers.map((user) => ({
-    value: user.id,
-    label: user.fullName,
-  }));
-
   async function onSubmit(values: AmbulanceUnitFormSchema) {
     if (initialData) {
       await updateMutation.mutateAsync(values);
@@ -122,13 +107,9 @@ export default function AmbulanceUnitForm({
               />
             </div>
 
-            <FormCheckboxGroup
-              control={form.control}
-              name="memberIds"
-              label="Tripulacion"
-              description="Selecciona los usuarios ambulancia que pertenecen a esta unidad."
-              options={memberOptions}
-              columns={2}
+            <MemberSelector
+              selectedIds={form.watch("memberIds")}
+              onChange={(ids) => form.setValue("memberIds", ids, { shouldDirty: true })}
               disabled={isExecuting}
             />
 

@@ -134,7 +134,15 @@ export default function TicketActionDialog({
       resetAndClose();
     },
     onError: (error) => {
-      toast.error(`Error al ${action} el ticket`);
+      const errorMessage = error?.response?.data?.message || error?.message || "";
+      if (errorMessage.includes("at least one member")) {
+        toast.error(
+          "No se puede asignar: la unidad de ambulancia no tiene miembros. Agregue al menos un miembro a la unidad antes de asignar el ticket.",
+          { duration: 5000 }
+        );
+      } else {
+        toast.error(`Error al ${action} el ticket`);
+      }
       console.error(error);
     },
   });

@@ -27,13 +27,12 @@ export const userFormSchema = z.object({
   role: z.enum(UserRole, {
     error: "El rol es obligatorio",
   }),
-  password: z
+password: z
     .string()
     .trim()
     .min(6, { message: "La contraseña debe tener al menos 6 caracteres" })
     .optional()
     .or(z.literal("")),
-  ambulanceUnitIds: z.array(z.string()).optional(),
 });
 
 export type UserFormSchema = z.infer<typeof userFormSchema>;

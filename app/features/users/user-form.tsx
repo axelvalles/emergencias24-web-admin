@@ -1,5 +1,4 @@
 import { FormInput } from "~/components/forms/form-input";
-import { FormCheckboxGroup } from "~/components/forms/form-checkbox-group";
 import { FormSelect } from "~/components/forms/form-select";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Form } from "~/components/ui/form";
@@ -10,8 +9,7 @@ import { toast } from "sonner";
 import { LoadingButton } from "~/components/ui/loading-button";
 import { parseAsInteger, useQueryState } from "nuqs";
 import { useMutation } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
-import { ambulanceUnitApi, userApi, getErrorMessage } from "~/http/api-server";
+import { userApi, getErrorMessage } from "~/http/api-server";
 import { userFormSchema, type UserFormSchema } from "./schemas";
 import {
   type CreateUserDTO,
@@ -30,9 +28,7 @@ const buildCommonPayload = (
     firstName: values.firstName.trim(),
     lastName: values.lastName.trim(),
     email: values.email.trim(),
-  role: values.role,
-    ambulanceUnitIds:
-      values.role === UserRole.AMBULANCE ? (values.ambulanceUnitIds ?? []) : [],
+    role: values.role,
   };
 
   return values.phone && values.phone.trim().length > 0
@@ -116,11 +112,6 @@ export default function UserForm({
 
   const isExecuting = createMutation.isPending || updateMutation.isPending;
 
-  const { data: ambulanceUnits = [] } = useQuery({
-    queryKey: ["ambulance-units"],
-    queryFn: () => ambulanceUnitApi.getAllUnits(),
-  });
-
   const form = useForm<UserFormSchema>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
@@ -130,15 +121,8 @@ export default function UserForm({
       email: initialData?.email || "",
       password: "",
       role: initialData?.role || UserRole.DISPATCHER,
-      ambulanceUnitIds: initialData?.ambulanceUnits.map((unit) => unit.id) || [],
     },
   });
-
-  const selectedRole = form.watch("role");
-  const ambulanceUnitOptions = ambulanceUnits.map((unit) => ({
-    value: unit.id,
-    label: unit.name,
-  }));
 
   async function onSubmit(values: UserFormSchema) {
     if (initialData) {
@@ -204,18 +188,6 @@ export default function UserForm({
                 required
               />
             </div>
-
-            {selectedRole === UserRole.AMBULANCE && (
-              <FormCheckboxGroup
-                disabled={isExecuting}
-                control={form.control}
-                name="ambulanceUnitIds"
-                label="Unidades de ambulancia"
-                description="Selecciona las unidades a las que pertenece este usuario."
-                options={ambulanceUnitOptions}
-                columns={2}
-              />
-            )}
 
             <LoadingButton
               loading={isExecuting}
