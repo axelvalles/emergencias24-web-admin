@@ -26,14 +26,14 @@ const sortSchema = z.array(z.object({ id: z.string(), desc: z.boolean() }));
 
 const toEnumArray = <T extends string>(
   values: string[] | null,
-  allowed: readonly T[]
+  allowed: readonly T[],
 ) => {
   if (!values || values.length === 0) {
     return undefined;
   }
 
   const filtered = values.filter((value): value is T =>
-    allowed.includes(value as T)
+    allowed.includes(value as T),
   );
 
   return filtered.length > 0 ? filtered : undefined;
@@ -46,7 +46,7 @@ export default function TicketListingPage() {
   const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
   const [serviceType] = useQueryState(
     "serviceType",
-    parseAsArrayOf(parseAsString)
+    parseAsArrayOf(parseAsString),
   );
   const [status] = useQueryState("status", parseAsArrayOf(parseAsString));
   const [priority] = useQueryState("priority", parseAsString);
@@ -72,8 +72,8 @@ export default function TicketListingPage() {
     priority: (priority as TicketPriority) || undefined,
     municipality: municipality || undefined,
     assignedUnitId:
-      user?.role === UserRole.AMBULANCE
-        ? user.activeAmbulanceUnit?.id ?? undefined
+      user?.role === UserRole.PARAMEDIC
+        ? (user.activeAmbulanceUnit?.id ?? undefined)
         : undefined,
     referenceNumber: referenceNumber ? Number(referenceNumber) : undefined,
     sortBy,

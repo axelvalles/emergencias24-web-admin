@@ -45,7 +45,7 @@ export const navItems: NavItem[] = [
     shortcut: ["d", "d"],
     items: [], // Empty array as there are no child items for Dashboard
   },
-{
+  {
     title: "Pacientes",
     url: "/pacientes",
     icon: "patient",
@@ -54,7 +54,7 @@ export const navItems: NavItem[] = [
     allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [], // No child items
   },
-{
+  {
     title: "Planes",
     url: "/planes",
     icon: "plans",
@@ -63,7 +63,7 @@ export const navItems: NavItem[] = [
     allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [],
   },
-{
+  {
     title: "Beneficios",
     url: "/beneficios",
     icon: "benefits",
@@ -72,7 +72,7 @@ export const navItems: NavItem[] = [
     allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [],
   },
-{
+  {
     title: "Suscripciones",
     url: "/suscripciones",
     icon: "subscriptions",
@@ -81,7 +81,7 @@ export const navItems: NavItem[] = [
     allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [],
   },
-{
+  {
     title: "Empresas",
     url: "/empresas",
     icon: "companies",
@@ -90,13 +90,21 @@ export const navItems: NavItem[] = [
     allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
     items: [],
   },
-{
+  {
     title: "Tickets",
     url: "/tickets",
     icon: "ticket",
     shortcut: ["t", "t"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.AMBULANCE, UserRole.SUPER_ADMIN],
+    allowedRoles: [
+      UserRole.ADMIN,
+      UserRole.DISPATCHER,
+      UserRole.DOCTOR,
+      UserRole.APPOINTMENT_MANAGER,
+      UserRole.MARKETING,
+      UserRole.PARAMEDIC,
+      UserRole.SUPER_ADMIN,
+    ],
     items: [], // No child items
   },
   {
@@ -108,7 +116,7 @@ export const navItems: NavItem[] = [
     allowedRoles: [UserRole.SUPER_ADMIN],
     items: [],
   },
-{
+  {
     title: "Usuarios",
     url: "/usuarios",
     icon: "users",
@@ -117,7 +125,7 @@ export const navItems: NavItem[] = [
     allowedRoles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
     items: [], // No child items
   },
-{
+  {
     title: "Unidades",
     url: "/unidades-ambulancia",
     icon: "ambulance",

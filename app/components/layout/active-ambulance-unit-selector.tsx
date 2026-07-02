@@ -17,11 +17,12 @@ export default function ActiveAmbulanceUnitSelector() {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
 
-  const isAmbulanceUser = user?.role === UserRole.AMBULANCE;
+  const isAmbulanceUser = user?.role === UserRole.PARAMEDIC;
   const ambulanceUnits = user?.ambulanceUnits ?? [];
 
   const setActiveUnitMutation = useMutation({
-    mutationFn: async (unitId: string) => ambulanceUnitApi.setActiveUnit(unitId),
+    mutationFn: async (unitId: string) =>
+      ambulanceUnitApi.setActiveUnit(unitId),
     onSuccess: async (updatedUser) => {
       setUser(updatedUser);
       socket.disconnect();

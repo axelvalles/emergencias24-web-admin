@@ -7,6 +7,7 @@ import {
   Phone,
   Home,
   TestTube,
+  Scan,
   Calendar,
   Heart,
   Clock,
@@ -23,6 +24,7 @@ import {
   TicketStatusLabels,
   TicketTypeLabels,
   TicketPriorityLabels,
+  TicketOwnerRoleLabels,
   TicketType,
   TicketStatus,
   TicketPriority,
@@ -45,6 +47,8 @@ const getTicketTypeIcon = (type: TicketType) => {
       return Home;
     case TicketType.LABORATORY:
       return TestTube;
+    case TicketType.IMAGING:
+      return Scan;
     case TicketType.APPOINTMENT:
       return Calendar;
     case TicketType.PLANS:
@@ -67,7 +71,7 @@ const getTicketStatusIcon = (status: TicketStatus) => {
       return RefreshCw;
     case TicketStatus.COMPLETED:
       return CheckCircle;
-    case TicketStatus.CANCELED:
+    case TicketStatus.CANCELLED:
       return XCircle;
     default:
       return Text;
@@ -152,7 +156,7 @@ export const columns: ColumnDef<Ticket>[] = [
           variant = "warning";
           break;
         case TicketStatus.COMPLETED:
-        case TicketStatus.CANCELED:
+        case TicketStatus.CANCELLED:
           variant = "default";
           break;
       }
@@ -202,6 +206,20 @@ export const columns: ColumnDef<Ticket>[] = [
 
       return <Badge variant={variant}>{label}</Badge>;
     },
+  },
+  {
+    id: "currentOwnerRole",
+    accessorKey: "currentOwnerRole",
+    header: ({ column }: { column: Column<Ticket, unknown> }) => (
+      <DataTableColumnHeader column={column} title="Responsable" />
+    ),
+    cell: ({ cell }) => {
+      const value = cell.getValue<Ticket["currentOwnerRole"]>();
+      return (
+        <div>{value ? TicketOwnerRoleLabels[value] : "Administrativo"}</div>
+      );
+    },
+    enableColumnFilter: false,
   },
   {
     id: "createdAt",

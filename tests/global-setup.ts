@@ -15,13 +15,18 @@ const STORAGE_STATE_PATH = path.join(_setupDir, ".auth/admin-state.json");
 
 function loadE2EEnv(): void {
   const webAdminDir = path.resolve(_setupDir, "..");
-  const backendDir = path.resolve(webAdminDir, "../backend");
+  const backendDirCandidates = [
+    path.resolve(webAdminDir, "../emergencias24-backend"),
+    path.resolve(webAdminDir, "../backend"),
+  ];
 
   const envFiles = [
     path.join(webAdminDir, ".env"),
     path.join(webAdminDir, ".env.local"),
-    path.join(backendDir, ".env"),
-    path.join(backendDir, ".env.local"),
+    ...backendDirCandidates.flatMap((backendDir) => [
+      path.join(backendDir, ".env"),
+      path.join(backendDir, ".env.local"),
+    ]),
   ];
 
   for (const envPath of envFiles) {

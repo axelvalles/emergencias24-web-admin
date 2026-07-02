@@ -5,14 +5,20 @@ export enum UserRole {
   SUPER_ADMIN = "super-admin",
   ADMIN = "admin",
   DISPATCHER = "dispatcher",
-  AMBULANCE = "ambulance",
+  PARAMEDIC = "paramedic",
+  DOCTOR = "doctor",
+  APPOINTMENT_MANAGER = "appointment_manager",
+  MARKETING = "marketing",
 }
 
 export const UserRoleLabels = {
   [UserRole.SUPER_ADMIN]: "Super administrador",
   [UserRole.ADMIN]: "Administrador",
-  [UserRole.DISPATCHER]: "Central",
-  [UserRole.AMBULANCE]: "Ambulancia",
+  [UserRole.DISPATCHER]: "Despachador",
+  [UserRole.PARAMEDIC]: "Paramédico",
+  [UserRole.DOCTOR]: "Médico",
+  [UserRole.APPOINTMENT_MANAGER]: "Gestor de citas",
+  [UserRole.MARKETING]: "Marketing",
 } as const;
 
 export enum UserStatus {

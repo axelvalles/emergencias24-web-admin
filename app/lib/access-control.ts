@@ -5,20 +5,29 @@ const ROLE_HIERARCHY: Record<UserRole, readonly UserRole[]> = {
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
     UserRole.DISPATCHER,
-    UserRole.AMBULANCE,
+    UserRole.PARAMEDIC,
+    UserRole.DOCTOR,
+    UserRole.APPOINTMENT_MANAGER,
+    UserRole.MARKETING,
   ],
   [UserRole.ADMIN]: [
     UserRole.ADMIN,
     UserRole.DISPATCHER,
-    UserRole.AMBULANCE,
+    UserRole.PARAMEDIC,
+    UserRole.DOCTOR,
+    UserRole.APPOINTMENT_MANAGER,
+    UserRole.MARKETING,
   ],
   [UserRole.DISPATCHER]: [UserRole.DISPATCHER],
-  [UserRole.AMBULANCE]: [UserRole.AMBULANCE],
+  [UserRole.PARAMEDIC]: [UserRole.PARAMEDIC],
+  [UserRole.DOCTOR]: [UserRole.DOCTOR],
+  [UserRole.APPOINTMENT_MANAGER]: [UserRole.APPOINTMENT_MANAGER],
+  [UserRole.MARKETING]: [UserRole.MARKETING],
 };
 
 export function canAccessRole(
   userRole: UserRole | null | undefined,
-  allowedRoles?: readonly UserRole[]
+  allowedRoles?: readonly UserRole[],
 ): boolean {
   if (!allowedRoles || allowedRoles.length === 0) {
     return true;
@@ -29,6 +38,6 @@ export function canAccessRole(
   }
 
   return allowedRoles.some((allowedRole) =>
-    ROLE_HIERARCHY[userRole].includes(allowedRole)
+    ROLE_HIERARCHY[userRole].includes(allowedRole),
   );
 }

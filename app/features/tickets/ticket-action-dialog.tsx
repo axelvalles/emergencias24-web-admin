@@ -29,6 +29,12 @@ import {
 } from "@tabler/icons-react";
 import { useParams } from "react-router";
 import type { AmbulanceUnit } from "~/types/ambulance-units";
+import {
+  TICKET_OWNER_ROLE,
+  TicketOwnerRoleLabels,
+  type AssignTicketPayload,
+  type Ticket,
+} from "~/types/tickets";
 import { cn } from "~/lib/utils";
 
 export type TicketAction = "assign" | "start" | "complete" | "cancel";
@@ -38,6 +44,7 @@ interface TicketActionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   ticketId: string;
+  ticket: Ticket;
 }
 
 interface ActionConfig {
@@ -86,13 +93,27 @@ export default function TicketActionDialog({
   open,
   onOpenChange,
   ticketId,
+  ticket,
 }: TicketActionDialogProps) {
   const { referenceNumber } = useParams();
   const queryClient = useQueryClient();
   const config = actionConfigs[action];
+  const [selectedOwnerRole, setSelectedOwnerRole] = useState<string>(
+    ticket.currentOwnerRole ?? "",
+  );
 
   const [selectedAmbulanceUnitId, setSelectedAmbulanceUnitId] = useState("");
   const [comment, setComment] = useState("");
+
+  const assignableOwnerRoles = [
+    TICKET_OWNER_ROLE.PARAMEDIC,
+    TICKET_OWNER_ROLE.DOCTOR,
+    TICKET_OWNER_ROLE.APPOINTMENT_MANAGER,
+    TICKET_OWNER_ROLE.MARKETING,
+  ] as const;
+
+  const selectedOwnerRoleRequiresUnit =
+    selectedOwnerRole === TICKET_OWNER_ROLE.PARAMEDIC;
 
   const { data: ambulanceUnits = [], isLoading: isLoadingUnits } = useQuery({
     queryKey: ["ambulance-units-search"],
@@ -100,18 +121,20 @@ export default function TicketActionDialog({
       ambulanceUnitApi.searchUnits({
         limit: 50,
       }),
-    enabled: action === "assign",
+    enabled: action === "assign" && selectedOwnerRoleRequiresUnit,
   });
 
   const actionMutation = useMutation({
     mutationFn: () => {
       switch (action) {
         case "assign":
-          return ticketApi.assignTicket(
-            ticketId,
-            selectedAmbulanceUnitId,
-            comment || undefined,
-          );
+          return ticketApi.assignTicket(ticketId, {
+            ownerRole: selectedOwnerRole as AssignTicketPayload["ownerRole"],
+            ambulanceUnitId: selectedOwnerRoleRequiresUnit
+              ? selectedAmbulanceUnitId
+              : undefined,
+            comment: comment || undefined,
+          });
         case "start":
           return ticketApi.startTicket(ticketId, comment || undefined);
         case "complete":
@@ -134,11 +157,12 @@ export default function TicketActionDialog({
       resetAndClose();
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error?.message || "";
+      const errorMessage =
+        error instanceof Error ? error.message : String(error ?? "");
       if (errorMessage.includes("at least one member")) {
         toast.error(
           "No se puede asignar: la unidad de ambulancia no tiene miembros. Agregue al menos un miembro a la unidad antes de asignar el ticket.",
-          { duration: 5000 }
+          { duration: 5000 },
         );
       } else {
         toast.error(`Error al ${action} el ticket`);
@@ -149,12 +173,22 @@ export default function TicketActionDialog({
 
   const resetAndClose = () => {
     setSelectedAmbulanceUnitId("");
+    setSelectedOwnerRole(ticket.currentOwnerRole ?? "");
     setComment("");
     onOpenChange(false);
   };
 
   const handleConfirm = () => {
-    if (action === "assign" && !selectedAmbulanceUnitId) {
+    if (action === "assign" && !selectedOwnerRole) {
+      toast.error("Seleccione un responsable");
+      return;
+    }
+
+    if (
+      action === "assign" &&
+      selectedOwnerRoleRequiresUnit &&
+      !selectedAmbulanceUnitId
+    ) {
       toast.error("Seleccione una unidad");
       return;
     }
@@ -195,28 +229,56 @@ export default function TicketActionDialog({
 
         <div className="space-y-4 py-4">
           {action === "assign" && (
-            <div className="space-y-2">
-              <Label htmlFor="user">Unidad</Label>
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="ownerRole">Responsable</Label>
                 <Select
-                  value={selectedAmbulanceUnitId}
-                  onValueChange={setSelectedAmbulanceUnitId}
+                  value={selectedOwnerRole}
+                  onValueChange={setSelectedOwnerRole}
                 >
-                  <SelectTrigger id="user" className="w-full">
-                    <SelectValue
-                      placeholder={
-                        isLoadingUnits ? "Cargando unidades..." : "Seleccionar unidad"
-                      }
-                    />
+                  <SelectTrigger id="ownerRole" className="w-full">
+                    <SelectValue placeholder="Seleccionar responsable" />
                   </SelectTrigger>
-                <SelectContent>
-                  {ambulanceUnits.map((ambulanceUnit: AmbulanceUnit) => (
-                    <SelectItem key={ambulanceUnit.id} value={ambulanceUnit.id}>
-                      {ambulanceUnit.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                  <SelectContent>
+                    {assignableOwnerRoles.map((ownerRole) => (
+                      <SelectItem key={ownerRole} value={ownerRole}>
+                        {TicketOwnerRoleLabels[ownerRole]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {selectedOwnerRoleRequiresUnit && (
+                <div className="space-y-2">
+                  <Label htmlFor="user">Unidad</Label>
+                  <Select
+                    value={selectedAmbulanceUnitId}
+                    onValueChange={setSelectedAmbulanceUnitId}
+                  >
+                    <SelectTrigger id="user" className="w-full">
+                      <SelectValue
+                        placeholder={
+                          isLoadingUnits
+                            ? "Cargando unidades..."
+                            : "Seleccionar unidad"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ambulanceUnits.map((ambulanceUnit: AmbulanceUnit) => (
+                        <SelectItem
+                          key={ambulanceUnit.id}
+                          value={ambulanceUnit.id}
+                        >
+                          {ambulanceUnit.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </>
           )}
 
           <div className="space-y-2">
@@ -253,7 +315,12 @@ export default function TicketActionDialog({
             variant={config.variant}
             onClick={handleConfirm}
             loading={isLoading}
-            disabled={isLoading || (action === "assign" && !selectedAmbulanceUnitId)}
+            disabled={
+              isLoading ||
+              (action === "assign" &&
+                (!selectedOwnerRole ||
+                  (selectedOwnerRoleRequiresUnit && !selectedAmbulanceUnitId)))
+            }
           >
             {config.confirmText}
           </LoadingButton>

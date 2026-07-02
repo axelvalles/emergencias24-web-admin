@@ -24,7 +24,15 @@ const ROUTE_ROLE_RULES: Array<{
   },
   {
     prefix: "/tickets",
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.AMBULANCE],
+    allowedRoles: [
+      UserRole.ADMIN,
+      UserRole.DISPATCHER,
+      UserRole.DOCTOR,
+      UserRole.APPOINTMENT_MANAGER,
+      UserRole.MARKETING,
+      UserRole.PARAMEDIC,
+      UserRole.SUPER_ADMIN,
+    ],
   },
   {
     prefix: "/pacientes",
@@ -53,7 +61,7 @@ export default function AuthLayout() {
   const location = useLocation();
 
   const matchedRule = ROUTE_ROLE_RULES.find((rule) =>
-    location.pathname.startsWith(rule.prefix)
+    location.pathname.startsWith(rule.prefix),
   );
 
   return (

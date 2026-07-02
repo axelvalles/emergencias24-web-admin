@@ -7,13 +7,18 @@ const helpersDir = path.dirname(fileURLToPath(import.meta.url));
 function loadTestEnv(): void {
   const testsDir = helpersDir;
   const webAdminDir = path.resolve(testsDir, "..");
-  const backendDir = path.resolve(webAdminDir, "../backend");
+  const backendDirCandidates = [
+    path.resolve(webAdminDir, "../emergencias24-backend"),
+    path.resolve(webAdminDir, "../backend"),
+  ];
 
   const envFiles = [
     path.join(webAdminDir, ".env"),
     path.join(webAdminDir, ".env.local"),
-    path.join(backendDir, ".env"),
-    path.join(backendDir, ".env.local"),
+    ...backendDirCandidates.flatMap((backendDir) => [
+      path.join(backendDir, ".env"),
+      path.join(backendDir, ".env.local"),
+    ]),
   ];
 
   for (const envPath of envFiles) {

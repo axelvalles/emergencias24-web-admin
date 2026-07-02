@@ -30,8 +30,12 @@ export class UserFormPage extends BasePage {
     this.phoneInput = page.getByLabel("Teléfono");
     this.passwordInput = page.getByLabel(/contraseña/i);
     this.roleSelect = page.getByLabel("Rol");
-    this.submitButton = page.getByRole("button", { name: /crear usuario|actualizar usuario/i });
-    this.formTitle = page.getByText(/crear usuario|actualizar usuario/i).first();
+    this.submitButton = page.getByRole("button", {
+      name: /crear usuario|actualizar usuario/i,
+    });
+    this.formTitle = page
+      .getByText(/crear usuario|actualizar usuario/i)
+      .first();
     this.pageTitle = page.getByRole("heading", { name: /usuario/i }).first();
   }
 
@@ -42,34 +46,57 @@ export class UserFormPage extends BasePage {
     if (data.phone) await this.phoneInput.fill(data.phone);
     if (data.password) await this.passwordInput.fill(data.password);
     if (data.role) {
-      const roleLabel = UserRoleLabels[data.role as keyof typeof UserRoleLabels] ?? data.role;
+      const roleLabel =
+        UserRoleLabels[data.role as keyof typeof UserRoleLabels] ?? data.role;
       await this.roleSelect.click();
-      await this.page.getByRole("option", { name: new RegExp(roleLabel, "i") }).first().click();
+      await this.page
+        .getByRole("option", { name: new RegExp(roleLabel, "i") })
+        .first()
+        .click();
     }
   }
 
+  async openRoleOptions(): Promise<void> {
+    await this.roleSelect.click();
+  }
+
+  getRoleOption(role: string): Locator {
+    const roleLabel =
+      UserRoleLabels[role as keyof typeof UserRoleLabels] ?? role;
+    return this.page
+      .getByRole("option", { name: new RegExp(roleLabel, "i") })
+      .first();
+  }
+
   async expectFormToBePrepopulated(data: Partial<UserFormData>): Promise<void> {
-    if (data.firstName) await expect(this.firstNameInput).toHaveValue(data.firstName);
-    if (data.lastName) await expect(this.lastNameInput).toHaveValue(data.lastName);
+    if (data.firstName)
+      await expect(this.firstNameInput).toHaveValue(data.firstName);
+    if (data.lastName)
+      await expect(this.lastNameInput).toHaveValue(data.lastName);
     if (data.email) await expect(this.emailInput).toHaveValue(data.email);
     if (data.role) {
-      const roleLabel = UserRoleLabels[data.role as keyof typeof UserRoleLabels] ?? data.role;
+      const roleLabel =
+        UserRoleLabels[data.role as keyof typeof UserRoleLabels] ?? data.role;
       await expect(this.roleSelect).toContainText(new RegExp(roleLabel, "i"));
     }
   }
 
   async expectPasswordToBeOptional(): Promise<void> {
     // On edit form, password label should indicate it's optional
-    const label = this.page.getByText(/contraseña.*opcional/i).or(
-      this.page.getByText(/dejar.*blanco/i)
-    );
+    const label = this.page
+      .getByText(/contraseña.*opcional/i)
+      .or(this.page.getByText(/dejar.*blanco/i));
     await expect(label).toBeVisible();
   }
 
   async expectValidationError(field: string): Promise<void> {
-    const error = this.page.getByText(/requerido|inválido/i).or(
-      this.page.locator(".text-destructive, .text-red-500, [role='alert']").filter({ hasText: field })
-    );
+    const error = this.page
+      .getByText(/requerido|inválido/i)
+      .or(
+        this.page
+          .locator(".text-destructive, .text-red-500, [role='alert']")
+          .filter({ hasText: field }),
+      );
     await expect(error.first()).toBeVisible();
   }
 
@@ -79,7 +106,9 @@ export class UserFormPage extends BasePage {
 
   async expectSuccessNotification(): Promise<void> {
     await this.waitForToast();
-    const toast = this.page.locator("[data-sonner-toast], [role='alert']").first();
+    const toast = this.page
+      .locator("[data-sonner-toast], [role='alert']")
+      .first();
     await expect(toast).toBeVisible();
   }
 

@@ -8,14 +8,25 @@ import { UserRole } from "~/types/users";
 export default function Tickets() {
   const user = useAuthStore((state) => state.user);
   const needsActiveUnitSelection =
-    user?.role === UserRole.AMBULANCE &&
+    user?.role === UserRole.PARAMEDIC &&
     (user.ambulanceUnits.length > 1 || user.ambulanceUnits.length === 0) &&
     !user.activeAmbulanceUnit;
-  const title = user?.role === UserRole.AMBULANCE ? "Mis tickets" : "Tickets";
+  const title =
+    user &&
+    [
+      UserRole.PARAMEDIC,
+      UserRole.DOCTOR,
+      UserRole.APPOINTMENT_MANAGER,
+      UserRole.MARKETING,
+    ].includes(user.role)
+      ? "Mis tickets"
+      : "Tickets";
   const description =
-    user?.role === UserRole.AMBULANCE
-      ? "Consulta los tickets asignados a tu unidad activa."
-      : "Gestiona los tickets de emergencia.";
+    user?.role === UserRole.PARAMEDIC
+      ? "Consulta los tickets asignados a tu unidad activa y a tu cola operativa."
+      : title === "Mis tickets"
+        ? "Consulta los tickets asignados a tu rol operativo."
+        : "Gestiona los tickets operativos del sistema.";
 
   return (
     <PageContainer scrollable={false}>
@@ -25,7 +36,8 @@ export default function Tickets() {
         </div>
         {needsActiveUnitSelection && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            Selecciona una unidad activa en el encabezado para consultar y operar tickets.
+            Selecciona una unidad activa en el encabezado para consultar y
+            operar tickets.
           </div>
         )}
         <Separator />

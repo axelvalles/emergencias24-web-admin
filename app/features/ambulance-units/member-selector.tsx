@@ -7,18 +7,13 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
+import type { User } from "~/types/users";
 
 interface MemberSelectorProps {
   selectedIds: string[];
   onChange: (ids: string[]) => void;
   disabled?: boolean;
   className?: string;
-}
-
-interface UserOption {
-  id: string;
-  fullName: string;
-  email: string;
 }
 
 export function MemberSelector({
@@ -36,7 +31,7 @@ export function MemberSelector({
       userApi.searchUsers({
         term: searchTerm,
         limit: 20,
-        role: [UserRole.AMBULANCE],
+        role: [UserRole.PARAMEDIC],
       }),
     enabled: searchTerm.length > 0,
   });
@@ -46,15 +41,17 @@ export function MemberSelector({
     queryFn: () =>
       userApi.searchUsers({
         limit: 50,
-        role: [UserRole.AMBULANCE],
+        role: [UserRole.PARAMEDIC],
       }),
   });
 
-  const selectedUsers = useMemo(() => {
-    return selectedIds
-      .map((id) => allAmbulanceUsers.find((u) => u.id === id))
-      .filter((u): u is UserOption => u !== undefined);
-  }, [selectedIds, allAmbulanceUsers]);
+  const selectedUsers = useMemo(
+    () =>
+      selectedIds
+        .map((id) => allAmbulanceUsers.find((u) => u.id === id))
+        .filter((u): u is User => Boolean(u)),
+    [selectedIds, allAmbulanceUsers],
+  );
 
   const availableUsers = useMemo(() => {
     const usersToSearch = searchTerm ? searchResults : allAmbulanceUsers;
@@ -65,7 +62,7 @@ export function MemberSelector({
           user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           `${user.firstName} ${user.lastName}`
             .toLowerCase()
-            .includes(searchTerm.toLowerCase()))
+            .includes(searchTerm.toLowerCase())),
     );
   }, [searchTerm, searchResults, allAmbulanceUsers, selectedIds]);
 
@@ -81,11 +78,11 @@ export function MemberSelector({
 
   return (
     <div className={cn("space-y-3", className)}>
-      <label className="text-sm font-medium">Tripulación</label>
+      <label className="text-sm font-medium">Tripulación paramédica</label>
 
       <div className="relative">
         <Input
-          placeholder="Buscar usuario ambulancia..."
+          placeholder="Buscar paramédico..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);

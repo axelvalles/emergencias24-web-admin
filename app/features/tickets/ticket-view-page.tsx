@@ -21,6 +21,9 @@ import {
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router";
 import {
+  getUserDisplayName,
+  TICKET_OWNER_ROLE,
+  TicketOwnerRoleLabels,
   TicketStatus,
   TicketTypeLabels,
   TicketStatusLabels,
@@ -91,10 +94,25 @@ function getStatusBadgeVariant(status: TicketStatus) {
       return "warning";
     case TicketStatus.COMPLETED:
       return "success";
-    case TicketStatus.CANCELED:
+    case TicketStatus.CANCELLED:
       return "secondary";
     default:
       return "default";
+  }
+}
+
+function getUserOwnerRole(role?: UserRole | null) {
+  switch (role) {
+    case UserRole.PARAMEDIC:
+      return TICKET_OWNER_ROLE.PARAMEDIC;
+    case UserRole.DOCTOR:
+      return TICKET_OWNER_ROLE.DOCTOR;
+    case UserRole.APPOINTMENT_MANAGER:
+      return TICKET_OWNER_ROLE.APPOINTMENT_MANAGER;
+    case UserRole.MARKETING:
+      return TICKET_OWNER_ROLE.MARKETING;
+    default:
+      return null;
   }
 }
 
@@ -130,7 +148,7 @@ function getCurrentPosition(): Promise<{ lat: number; lng: number }> {
       },
       (error) => {
         reject(error);
-      }
+      },
     );
   });
 }
@@ -187,18 +205,24 @@ export default function TicketViewPage() {
   }
 
   const currentStep = getStatusStep(ticket.status);
-  const isCanceled = ticket.status === TicketStatus.CANCELED;
-const canAssignTicket =
+  const isCanceled = ticket.status === TicketStatus.CANCELLED;
+  const canAssignTicket =
     currentUser?.role === UserRole.ADMIN ||
     currentUser?.role === UserRole.DISPATCHER ||
     currentUser?.role === UserRole.SUPER_ADMIN;
   const canCancelTicket = canAssignTicket;
+  const userOwnerRole = getUserOwnerRole(currentUser?.role);
   const isAssignedToCurrentAmbulance =
-    currentUser?.role === UserRole.AMBULANCE &&
+    currentUser?.role === UserRole.PARAMEDIC &&
     ticket.assignedUnit?.id === currentUser.activeAmbulanceUnit?.id;
+  const isOwnedByCurrentOperationalRole =
+    Boolean(userOwnerRole) && ticket.currentOwnerRole === userOwnerRole;
   const canAdvanceTicket =
     currentUser?.role === UserRole.ADMIN ||
     currentUser?.role === UserRole.DISPATCHER ||
+    currentUser?.role === UserRole.SUPER_ADMIN ||
+    (isOwnedByCurrentOperationalRole &&
+      currentUser?.role !== UserRole.PARAMEDIC) ||
     isAssignedToCurrentAmbulance;
 
   return (
@@ -241,10 +265,15 @@ const canAssignTicket =
                           {TicketPriorityLabels[ticket.priority]}
                         </Badge>
                         <span>{TicketTypeLabels[ticket.serviceType]}</span>
+                        {ticket.currentOwnerRole && (
+                          <Badge variant="outline">
+                            {TicketOwnerRoleLabels[ticket.currentOwnerRole]}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
-{ticket.assignedUnit && (
+                    {ticket.assignedUnit && (
                       <div className="flex w-full items-center gap-3 rounded-lg bg-muted/50 px-4 py-3 lg:max-w-xs">
                         <Avatar>
                           <AvatarFallback className="bg-primary/10 text-primary">
@@ -283,11 +312,13 @@ const canAssignTicket =
                                   window.open(url, "_blank");
                                 } catch {
                                   toast.error(
-                                    "No se pudo obtener tu ubicación. Asegúrate de permitir el acceso a la ubicación."
+                                    "No se pudo obtener tu ubicación. Asegúrate de permitir el acceso a la ubicación.",
                                   );
                                   window.open(
-                                    buildRouteWithCurrentLocationUrl(ticket.location!),
-                                    "_blank"
+                                    buildRouteWithCurrentLocationUrl(
+                                      ticket.location!,
+                                    ),
+                                    "_blank",
                                   );
                                 } finally {
                                   setIsFollowingRoute(false);
@@ -296,7 +327,9 @@ const canAssignTicket =
                               disabled={isFollowingRoute}
                             >
                               <IconNavigation className="mr-1 h-4 w-4" />
-                              {isFollowingRoute ? "Obteniendo..." : "Seguir ruta"}
+                              {isFollowingRoute
+                                ? "Obteniendo..."
+                                : "Seguir ruta"}
                             </Button>
                           )}
                       </div>
@@ -315,11 +348,11 @@ const canAssignTicket =
                       </div>
                       <div className="overflow-x-auto pb-2">
                         <div className="flex min-w-[32rem] items-center">
-                        {STATUS_FLOW.map((step, index) => {
-                          const Icon = step.icon;
-                          const isCompleted = index < currentStep;
-                          const isCurrent = index === currentStep;
-                          const isLast = index === STATUS_FLOW.length - 1;
+                          {STATUS_FLOW.map((step, index) => {
+                            const Icon = step.icon;
+                            const isCompleted = index < currentStep;
+                            const isCurrent = index === currentStep;
+                            const isLast = index === STATUS_FLOW.length - 1;
 
                             return (
                               <div
@@ -327,41 +360,41 @@ const canAssignTicket =
                                 className="flex flex-1 items-center"
                               >
                                 <div className="flex flex-col items-center">
-                                <div
-                                  className={cn(
-                                    "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all",
-                                    isCompleted &&
-                                      "bg-primary border-primary text-primary-foreground",
-                                    isCurrent &&
-                                      "bg-primary/10 border-primary text-primary",
-                                    !isCompleted &&
-                                      !isCurrent &&
-                                      "bg-muted border-muted-foreground/30 text-muted-foreground",
-                                  )}
-                                >
-                                  <Icon className="h-4 w-4" />
+                                  <div
+                                    className={cn(
+                                      "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all",
+                                      isCompleted &&
+                                        "bg-primary border-primary text-primary-foreground",
+                                      isCurrent &&
+                                        "bg-primary/10 border-primary text-primary",
+                                      !isCompleted &&
+                                        !isCurrent &&
+                                        "bg-muted border-muted-foreground/30 text-muted-foreground",
+                                    )}
+                                  >
+                                    <Icon className="h-4 w-4" />
+                                  </div>
+                                  <span
+                                    className={cn(
+                                      "text-xs mt-2 font-medium",
+                                      isCurrent && "text-primary",
+                                      !isCurrent && "text-muted-foreground",
+                                    )}
+                                  >
+                                    {step.label}
+                                  </span>
                                 </div>
-                                <span
-                                  className={cn(
-                                    "text-xs mt-2 font-medium",
-                                    isCurrent && "text-primary",
-                                    !isCurrent && "text-muted-foreground",
-                                  )}
-                                >
-                                  {step.label}
-                                </span>
+                                {!isLast && (
+                                  <div
+                                    className={cn(
+                                      "flex-1 h-0.5 mx-2",
+                                      isCompleted ? "bg-primary" : "bg-muted",
+                                    )}
+                                  />
+                                )}
                               </div>
-                              {!isLast && (
-                                <div
-                                  className={cn(
-                                    "flex-1 h-0.5 mx-2",
-                                    isCompleted ? "bg-primary" : "bg-muted",
-                                  )}
-                                />
-                              )}
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -464,6 +497,16 @@ const canAssignTicket =
                           {format(ticket.updatedAt, "dd/MM/yyyy hh:mm a")}
                         </p>
                       </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">
+                          Responsable actual
+                        </label>
+                        <p className="text-sm">
+                          {ticket.currentOwnerRole
+                            ? TicketOwnerRoleLabels[ticket.currentOwnerRole]
+                            : "Gestión administrativa"}
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -508,58 +551,62 @@ const canAssignTicket =
                   {canAssignTicket &&
                     (ticket.status === TicketStatus.PENDING ||
                       ticket.status === TicketStatus.ASSIGNED) && (
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start h-10"
-                      onClick={() =>
-                        setActionDialog({ action: "assign", open: true })
-                      }
-                    >
-                      <IconUser className="mr-2 h-4 w-4" />
-                      {ticket.assignedAt ? "Reasignar" : "Asignar"}
-                    </Button>
-                  )}
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start h-10"
+                        onClick={() =>
+                          setActionDialog({ action: "assign", open: true })
+                        }
+                      >
+                        <IconUser className="mr-2 h-4 w-4" />
+                        {ticket.assignedAt || ticket.currentOwnerRole
+                          ? "Reasignar"
+                          : "Asignar"}
+                      </Button>
+                    )}
 
-                  {canAdvanceTicket && ticket.status === TicketStatus.ASSIGNED && (
-                    <Button
-                      variant="default"
-                      className="w-full justify-start h-10"
-                      onClick={() =>
-                        setActionDialog({ action: "start", open: true })
-                      }
-                    >
-                      <IconPlayerPlay className="mr-2 h-4 w-4" />
-                      Iniciar
-                    </Button>
-                  )}
+                  {canAdvanceTicket &&
+                    ticket.status === TicketStatus.ASSIGNED && (
+                      <Button
+                        variant="default"
+                        className="w-full justify-start h-10"
+                        onClick={() =>
+                          setActionDialog({ action: "start", open: true })
+                        }
+                      >
+                        <IconPlayerPlay className="mr-2 h-4 w-4" />
+                        Iniciar
+                      </Button>
+                    )}
 
-                  {canAdvanceTicket && ticket.status === TicketStatus.IN_PROGRESS && (
-                    <Button
-                      variant="default"
-                      className="w-full justify-start h-10 bg-green-600 hover:bg-green-700"
-                      onClick={() =>
-                        setActionDialog({ action: "complete", open: true })
-                      }
-                    >
-                      <IconCheck className="mr-2 h-4 w-4" />
-                      Completar
-                    </Button>
-                  )}
+                  {canAdvanceTicket &&
+                    ticket.status === TicketStatus.IN_PROGRESS && (
+                      <Button
+                        variant="default"
+                        className="w-full justify-start h-10 bg-green-600 hover:bg-green-700"
+                        onClick={() =>
+                          setActionDialog({ action: "complete", open: true })
+                        }
+                      >
+                        <IconCheck className="mr-2 h-4 w-4" />
+                        Completar
+                      </Button>
+                    )}
 
                   {canCancelTicket &&
                     !isCanceled &&
                     ticket.status !== TicketStatus.COMPLETED && (
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start h-10 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() =>
-                        setActionDialog({ action: "cancel", open: true })
-                      }
-                    >
-                      <IconX className="mr-2 h-4 w-4" />
-                      Cancelar
-                    </Button>
-                  )}
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start h-10 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() =>
+                          setActionDialog({ action: "cancel", open: true })
+                        }
+                      >
+                        <IconX className="mr-2 h-4 w-4" />
+                        Cancelar
+                      </Button>
+                    )}
 
                   {isCanceled && (
                     <div className="text-center py-3 text-muted-foreground text-sm bg-muted/50 rounded-md">
@@ -593,6 +640,22 @@ const canAssignTicket =
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between gap-3">
+                    <span className="text-muted-foreground">Responsable</span>
+                    <span>
+                      {ticket.currentOwnerRole
+                        ? TicketOwnerRoleLabels[ticket.currentOwnerRole]
+                        : "Gestión administrativa"}
+                    </span>
+                  </div>
+                  {ticket.resolvedBy && (
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-muted-foreground">
+                        Resuelto por
+                      </span>
+                      <span>{getUserDisplayName(ticket.resolvedBy)}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">Creado</span>
                     <span>{format(ticket.createdAt, "dd/MM/yyyy")}</span>
                   </div>
@@ -613,6 +676,7 @@ const canAssignTicket =
           open={actionDialog.open}
           onOpenChange={(open) => setActionDialog({ ...actionDialog, open })}
           ticketId={ticket.id}
+          ticket={ticket}
         />
       </div>
     </PageContainer>

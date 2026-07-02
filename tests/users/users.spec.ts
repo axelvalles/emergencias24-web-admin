@@ -1,19 +1,32 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { UsersListingPage } from "./users-page";
 import { UserFormPage } from "./user-form-page";
 import { generateTestUser, DEFAULT_ADMIN } from "../helpers";
 import { LoginPage } from "../auth/login-page";
 import { UserRole } from "~/types/users";
 
+const getDefaultAdminCredentials = () => {
+  if (!DEFAULT_ADMIN.email || !DEFAULT_ADMIN.password) {
+    throw new Error(
+      "E2E admin credentials are missing. Configure E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD or SUPERUSER_EMAIL/SUPERUSER_PASSWORD.",
+    );
+  }
+
+  return {
+    email: DEFAULT_ADMIN.email,
+    password: DEFAULT_ADMIN.password,
+  };
+};
+
 test.describe("Users — CRUD", () => {
   let loginPage: LoginPage;
   let usersPage: UsersListingPage;
   let userFormPage: UserFormPage;
 
-  const hydrateAuthStateFromApi = async (page: any) => {
+  const hydrateAuthStateFromApi = async (page: Page) => {
     const apiUrl = process.env.E2E_API_URL ?? "http://localhost:3000";
     const response = await page.request.post(`${apiUrl}/auth/login`, {
-      data: DEFAULT_ADMIN,
+      data: getDefaultAdminCredentials(),
     });
 
     if (!response.ok()) {
@@ -22,16 +35,22 @@ test.describe("Users — CRUD", () => {
 
     const loginResponse = await response.json();
 
-    await page.addInitScript((authStorage) => {
-      window.localStorage.setItem("auth-storage", JSON.stringify(authStorage));
-    }, {
-      state: {
-        user: loginResponse.user,
-        token: loginResponse.accessToken,
-        isAuthenticated: true,
+    await page.addInitScript(
+      (authStorage) => {
+        window.localStorage.setItem(
+          "auth-storage",
+          JSON.stringify(authStorage),
+        );
       },
-      version: 0,
-    });
+      {
+        state: {
+          user: loginResponse.user,
+          token: loginResponse.accessToken,
+          isAuthenticated: true,
+        },
+        version: 0,
+      },
+    );
 
     return true;
   };
@@ -44,7 +63,10 @@ test.describe("Users — CRUD", () => {
 
     const user = generateTestUser();
     await usersPage.clickNewUser();
-    await userFormPage.fillForm({ ...user, role: UserRole.CLINIC_ADMIN });
+    await userFormPage.fillForm({
+      ...user,
+      role: UserRole.APPOINTMENT_MANAGER,
+    });
     await userFormPage.submit();
     await userFormPage.expectSuccessNotification();
     await userFormPage.expectToBeOnUsersList();
@@ -58,7 +80,7 @@ test.describe("Users — CRUD", () => {
     await usersPage.goto();
 
     if (page.url().includes("/login")) {
-      await loginPage.login(DEFAULT_ADMIN);
+      await loginPage.login(getDefaultAdminCredentials());
 
       // Some environments do not auto-redirect after successful login.
       // Force navigation to users listing and validate auth from there.
@@ -80,13 +102,17 @@ test.describe("Users — CRUD", () => {
     await expect(usersPage.tableRows.first()).toBeVisible();
   });
 
-  test("USERS-E2E-002 — Click en 'Nuevo usuario' navega al formulario de creación", async ({ page }) => {
+  test("USERS-E2E-002 — Click en 'Nuevo usuario' navega al formulario de creación", async ({
+    page,
+  }) => {
     await usersPage.clickNewUser();
     await expect(page).toHaveURL(/\/usuarios\/nuevo/);
     await expect(userFormPage.formTitle).toBeVisible();
   });
 
-  test("USERS-E2E-003 — Búsqueda filtra usuarios por nombre o email", async ({ page }) => {
+  test("USERS-E2E-003 — Búsqueda filtra usuarios por nombre o email", async ({
+    page,
+  }) => {
     // Search for a known admin email
     await usersPage.searchUsers("admin");
     await page.waitForLoadState("networkidle");
@@ -96,15 +122,19 @@ test.describe("Users — CRUD", () => {
     expect(count).toBeGreaterThan(0);
   });
 
-  test("USERS-E2E-004 — Tabla tiene paginación (controles visibles)", async ({ page }) => {
+  test("USERS-E2E-004 — Tabla tiene paginación (controles visibles)", async ({
+    page,
+  }) => {
     // Check pagination controls exist
-    const pagination = page.getByRole("navigation", { name: /pagin|pager/i }).or(
-      page.getByText(/página.*de/i)
-    );
+    const pagination = page
+      .getByRole("navigation", { name: /pagin|pager/i })
+      .or(page.getByText(/página.*de/i));
     await expect(pagination.first()).toBeVisible();
   });
 
-  test("USERS-E2E-005 — Click en editar usuario navega al formulario con datos precargados", async ({ page }) => {
+  test("USERS-E2E-005 — Click en editar usuario navega al formulario con datos precargados", async ({
+    page,
+  }) => {
     await ensureEditableUserExists();
     const { editButton } = await usersPage.getFirstRowActions();
     await editButton.click();
@@ -118,13 +148,35 @@ test.describe("Users — CRUD", () => {
   test("USERS-E2E-006 — Crear usuario con datos válidos muestra notificación de éxito", async () => {
     const user = generateTestUser();
     await usersPage.clickNewUser();
-    await userFormPage.fillForm({ ...user, role: UserRole.CLINIC_ADMIN });
+    await userFormPage.fillForm({
+      ...user,
+      role: UserRole.APPOINTMENT_MANAGER,
+    });
     await userFormPage.submit();
     await userFormPage.expectSuccessNotification();
     await userFormPage.expectToBeOnUsersList();
   });
 
-  test("USERS-E2E-007 — Crear usuario sin campos requeridos muestra errores de validación", async ({ page }) => {
+  test("USERS-E2E-006A — Formulario de usuario muestra los nuevos roles operativos", async ({
+    page,
+  }) => {
+    await usersPage.clickNewUser();
+    await userFormPage.openRoleOptions();
+
+    await expect(userFormPage.getRoleOption(UserRole.PARAMEDIC)).toBeVisible();
+    await expect(userFormPage.getRoleOption(UserRole.DOCTOR)).toBeVisible();
+    await expect(
+      userFormPage.getRoleOption(UserRole.APPOINTMENT_MANAGER),
+    ).toBeVisible();
+    await expect(userFormPage.getRoleOption(UserRole.MARKETING)).toBeVisible();
+    await expect(page.getByRole("option", { name: /ambulancia/i })).toHaveCount(
+      0,
+    );
+  });
+
+  test("USERS-E2E-007 — Crear usuario sin campos requeridos muestra errores de validación", async ({
+    page,
+  }) => {
     await usersPage.clickNewUser();
     await userFormPage.submit();
     // Should show required field errors
@@ -132,45 +184,53 @@ test.describe("Users — CRUD", () => {
     await expect(errors.first()).toBeVisible();
   });
 
-  test("USERS-E2E-008 — Crear usuario con email malformado muestra error de validación", async ({ page }) => {
+  test("USERS-E2E-008 — Crear usuario con email malformado muestra error de validación", async ({
+    page,
+  }) => {
     const user = generateTestUser({ email: "not-valid-email" });
     await usersPage.clickNewUser();
-    await userFormPage.fillForm({ ...user, role: UserRole.CLINIC_ADMIN });
+    await userFormPage.fillForm({ ...user, role: UserRole.DOCTOR });
     await userFormPage.submit();
     const error = page.getByText(/correo.*inválido|email.*inválido/i);
     await expect(error).toBeVisible();
   });
 
-  test("USERS-E2E-009 — Crear usuario con password menor a 6 caracteres muestra error", async ({ page }) => {
+  test("USERS-E2E-009 — Crear usuario con password menor a 6 caracteres muestra error", async ({
+    page,
+  }) => {
     const user = generateTestUser({ password: "123" });
     await usersPage.clickNewUser();
-    await userFormPage.fillForm({ ...user, role: UserRole.CLINIC_ADMIN });
+    await userFormPage.fillForm({ ...user, role: UserRole.DOCTOR });
     await userFormPage.submit();
     const error = page.getByText(/al menos 6|6 caracteres/i);
     await expect(error).toBeVisible();
   });
 
-  test("USERS-E2E-010 — Crear usuario con email duplicado muestra error del servidor", async ({ page }) => {
+  test("USERS-E2E-010 — Crear usuario con email duplicado muestra error del servidor", async ({
+    page,
+  }) => {
     const user = generateTestUser();
     await usersPage.clickNewUser();
-    await userFormPage.fillForm({ ...user, role: UserRole.CLINIC_ADMIN });
+    await userFormPage.fillForm({ ...user, role: UserRole.MARKETING });
     await userFormPage.submit();
     await userFormPage.expectSuccessNotification();
     await userFormPage.expectToBeOnUsersList();
     // Try to create another user with same email
     await usersPage.clickNewUser();
-    await userFormPage.fillForm({ ...user, role: UserRole.CLINIC_ADMIN });
+    await userFormPage.fillForm({ ...user, role: UserRole.MARKETING });
     await userFormPage.submit();
     // Should show duplicate email error
-    const error = page.getByText(/email.*ya.*existe|duplicado/i).or(
-      page.getByText(/error.*500|error.*servidor/i)
-    );
+    const error = page
+      .getByText(/email.*ya.*existe|duplicado/i)
+      .or(page.getByText(/error.*500|error.*servidor/i));
     await expect(error.first()).toBeVisible();
   });
 
   // ─── UPDATE ────────────────────────────────────────────────────────────────
 
-  test("USERS-E2E-011 — Editar usuario y guardar muestra notificación de éxito", async ({ page }) => {
+  test("USERS-E2E-011 — Editar usuario y guardar muestra notificación de éxito", async ({
+    page,
+  }) => {
     await ensureEditableUserExists();
     // Navigate to edit first user
     const { editButton } = await usersPage.getFirstRowActions();
@@ -185,7 +245,9 @@ test.describe("Users — CRUD", () => {
     await userFormPage.expectToBeOnUsersList();
   });
 
-  test("USERS-E2E-012 — Editar usuario sin campos requeridos muestra errores de validación", async ({ page }) => {
+  test("USERS-E2E-012 — Editar usuario sin campos requeridos muestra errores de validación", async ({
+    page,
+  }) => {
     await ensureEditableUserExists();
     const { editButton } = await usersPage.getFirstRowActions();
     await editButton.click();
@@ -198,7 +260,9 @@ test.describe("Users — CRUD", () => {
     await expect(errors.first()).toBeVisible();
   });
 
-  test("USERS-E2E-013 — Cambiar password de usuario desde formulario de edición", async ({ page }) => {
+  test("USERS-E2E-013 — Cambiar password de usuario desde formulario de edición", async ({
+    page,
+  }) => {
     await ensureEditableUserExists();
     const { editButton } = await usersPage.getFirstRowActions();
     await editButton.click();
@@ -211,11 +275,13 @@ test.describe("Users — CRUD", () => {
 
   // ─── DEACTIVATE / TOGGLE STATUS ─────────────────────────────────────────────
 
-  test("USERS-E2E-014 — Desactivar usuario cambia su estado y muestra notificación", async ({ page }) => {
+  test("USERS-E2E-014 — Desactivar usuario cambia su estado y muestra notificación", async ({
+    page,
+  }) => {
     // First create a user to deactivate
     const user = generateTestUser();
     await usersPage.clickNewUser();
-    await userFormPage.fillForm({ ...user, role: UserRole.CLINIC_ADMIN });
+    await userFormPage.fillForm({ ...user, role: UserRole.PARAMEDIC });
     await userFormPage.submit();
     await userFormPage.expectSuccessNotification();
     await usersPage.goto();
@@ -242,10 +308,12 @@ test.describe("Users — CRUD", () => {
     }
   });
 
-  test("USERS-E2E-015 — Reactivar usuario desactivado cambia su estado", async ({ page }) => {
+  test("USERS-E2E-015 — Reactivar usuario desactivado cambia su estado", async ({
+    page,
+  }) => {
     const user = generateTestUser();
     await usersPage.clickNewUser();
-    await userFormPage.fillForm({ ...user, role: UserRole.CLINIC_ADMIN });
+    await userFormPage.fillForm({ ...user, role: UserRole.PARAMEDIC });
     await userFormPage.submit();
     await userFormPage.expectSuccessNotification();
     await usersPage.goto();
@@ -266,11 +334,16 @@ test.describe("Users — CRUD", () => {
 
   // ─── DELETE ───────────────────────────────────────────────────────────────
 
-  test("USERS-E2E-016 — Eliminar usuario muestra modal de confirmación y elimina al confirmar", async ({ page }) => {
+  test("USERS-E2E-016 — Eliminar usuario muestra modal de confirmación y elimina al confirmar", async ({
+    page,
+  }) => {
     // Create a user to delete
     const user = generateTestUser();
     await usersPage.clickNewUser();
-    await userFormPage.fillForm({ ...user, role: UserRole.CLINIC_ADMIN });
+    await userFormPage.fillForm({
+      ...user,
+      role: UserRole.APPOINTMENT_MANAGER,
+    });
     await userFormPage.submit();
     await userFormPage.expectSuccessNotification();
     await usersPage.goto();
@@ -286,12 +359,14 @@ test.describe("Users — CRUD", () => {
     if (await deleteBtn.isVisible()) {
       await deleteBtn.click();
       // Confirm modal should appear
-      const confirmModal = page.getByRole("dialog").or(page.getByText(/confirmar|seguro/i));
+      const confirmModal = page
+        .getByRole("dialog")
+        .or(page.getByText(/confirmar|seguro/i));
       await expect(confirmModal.first()).toBeVisible();
       // Confirm deletion
-      const confirmBtn = page.getByRole("button", { name: /confirmar|eliminar/i }).or(
-        page.getByText(/confirmar|eliminar/i)
-      );
+      const confirmBtn = page
+        .getByRole("button", { name: /confirmar|eliminar/i })
+        .or(page.getByText(/confirmar|eliminar/i));
       await confirmBtn.first().click();
       await page.waitForTimeout(500);
       // Should show success toast
