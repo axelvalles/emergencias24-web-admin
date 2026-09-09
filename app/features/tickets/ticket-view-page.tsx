@@ -18,6 +18,8 @@ import {
   IconUserCheck,
   IconClock,
   IconNavigation,
+  IconPhone,
+  IconBrandWhatsapp,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router";
 import {
@@ -42,6 +44,7 @@ import { cn } from "~/lib/utils";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { useAuthStore } from "~/store/useAuthStore";
 import { UserRole } from "~/types/users";
+import { buildPhoneActions } from "~/lib/phone-actions";
 
 const STATUS_FLOW = [
   { status: TicketStatus.PENDING, label: "Pendiente", icon: IconCircle },
@@ -114,14 +117,6 @@ function getUserOwnerRole(role?: UserRole | null) {
     default:
       return null;
   }
-}
-
-function formatPhoneForDisplay(phone?: string | null) {
-  if (!phone) {
-    return "No especificado";
-  }
-
-  return phone.replace(/^whatsapp:/i, "");
 }
 
 function buildNavigationUrl(location: string) {
@@ -205,6 +200,7 @@ export default function TicketViewPage() {
   }
 
   const currentStep = getStatusStep(ticket.status);
+  const phoneActions = buildPhoneActions(ticket.requesterPhone);
   const isCanceled = ticket.status === TicketStatus.CANCELLED;
   const canAssignTicket =
     currentUser?.role === UserRole.ADMIN ||
@@ -417,13 +413,37 @@ export default function TicketViewPage() {
                         </label>
                         <p className="font-medium">{ticket.requesterName}</p>
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <label className="text-xs font-medium text-muted-foreground">
                           Teléfono
                         </label>
                         <p className="break-all font-medium">
-                          {formatPhoneForDisplay(ticket.requesterPhone)}
+                          {phoneActions?.display ?? "No especificado"}
                         </p>
+                        {phoneActions && (
+                          <div className="flex flex-wrap gap-2">
+                            <Button asChild variant="outline" size="sm">
+                              <a
+                                href={phoneActions.telHref}
+                                aria-label={`Llamar a ${ticket.requesterName} al ${phoneActions.display}`}
+                              >
+                                <IconPhone />
+                                Llamar
+                              </a>
+                            </Button>
+                            <Button asChild variant="outline" size="sm">
+                              <a
+                                href={phoneActions.whatsappHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`Escribir por WhatsApp a ${ticket.requesterName} al ${phoneActions.display}`}
+                              >
+                                <IconBrandWhatsapp />
+                                WhatsApp
+                              </a>
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                     {ticket.location &&
