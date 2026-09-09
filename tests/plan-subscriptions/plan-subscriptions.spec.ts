@@ -81,6 +81,21 @@ test.describe("Plan Subscriptions — CRUD", () => {
     }
   });
 
+  test("SUB-E2E-017 — Faceted filters show readable option labels", async ({ page }) => {
+    await subscriptionsPage.goto();
+
+    await subscriptionsPage.payerTypeFilterTrigger.click();
+    await expect(page.getByRole("option", { name: "Paciente" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Empresa" })).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    await subscriptionsPage.statusFilterTrigger.click();
+    await expect(page.getByRole("option", { name: "Activa" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Suspendida" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Cancelada" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Expirada" })).toBeVisible();
+  });
+
   test("SUB-E2E-003 — Search filters subscriptions by patient name", async ({ page }) => {
     const planName = await createTestPlan();
     const patient = await createTestPatient();

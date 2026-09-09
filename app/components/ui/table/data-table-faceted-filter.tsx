@@ -129,12 +129,12 @@ export function DataTableFacetedFilter<TData, TValue>({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[50] p-0" align="start">
+      <PopoverContent className="w-[220px] p-0" align="start">
         <Command>
           <CommandInput placeholder={title} />
-          <CommandList className="max-h-full">
+          <CommandList>
             <CommandEmpty>No se encontraron resultados.</CommandEmpty>
-            <CommandGroup className="max-h-[75] overflow-x-hidden overflow-y-auto">
+            <CommandGroup>
               {options.map((option) => {
                 const isSelected = selectedValues.has(option.value);
 
@@ -154,7 +154,9 @@ export function DataTableFacetedFilter<TData, TValue>({
                       <CheckIcon className="text-primary-foreground" />
                     </div>
                     {option.icon && <option.icon />}
-                    <span className="truncate">{option.label}</span>
+                    <span className="min-w-0 flex-1 truncate">
+                      {option.label}
+                    </span>
                     {option.count && (
                       <span className="ml-auto font-mono text-xs">
                         {option.count}
