@@ -19,6 +19,9 @@ import {
 } from "~/types/plan-subscriptions";
 import { PlanSubscriptionTable } from "./plan-subscription-tables";
 import { columns } from "./plan-subscription-tables/columns";
+import { canAccessRole } from "~/lib/access-control";
+import { useAuthStore } from "~/store/useAuthStore";
+import { UserRole } from "~/types/users";
 
 const sortSchema = z.array(z.object({ id: z.string(), desc: z.boolean() }));
 
@@ -38,6 +41,8 @@ const toEnumArray = <T extends string>(
 };
 
 export default function PlanSubscriptionListingPage() {
+  const user = useAuthStore((state) => state.user);
+  const canManageSubscriptions = canAccessRole(user?.role, [UserRole.ADMIN]);
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
   const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
@@ -97,7 +102,11 @@ export default function PlanSubscriptionListingPage() {
     <PlanSubscriptionTable
       data={subscriptions}
       totalItems={totalItems}
-      columns={columns}
+      columns={
+        canManageSubscriptions
+          ? columns
+          : columns.filter((column) => column.id !== "actions")
+      }
       isFetching={isFetching}
       globalSearch={search}
       onGlobalSearchChange={debouncedSetSearch}

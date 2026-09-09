@@ -60,7 +60,7 @@ export const navItems: NavItem[] = [
     icon: "plans",
     shortcut: ["l", "l"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
+    allowedRoles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
     items: [],
   },
   {
@@ -69,7 +69,7 @@ export const navItems: NavItem[] = [
     icon: "benefits",
     shortcut: ["b", "f"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
+    allowedRoles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
     items: [],
   },
   {
@@ -87,7 +87,7 @@ export const navItems: NavItem[] = [
     icon: "companies",
     shortcut: ["c", "c"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
+    allowedRoles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
     items: [],
   },
   {
@@ -131,7 +131,7 @@ export const navItems: NavItem[] = [
     icon: "ambulance",
     shortcut: ["u", "a"],
     isActive: false,
-    allowedRoles: [UserRole.ADMIN, UserRole.DISPATCHER, UserRole.SUPER_ADMIN],
+    allowedRoles: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
     items: [],
   },
 ];

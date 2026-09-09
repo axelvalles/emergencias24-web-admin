@@ -16,6 +16,9 @@ import {
 import z from "zod";
 import { PatientStatus } from "~/types/patients";
 import { useDebouncedCallback } from "~/hooks/use-debounced-callback";
+import { canAccessRole } from "~/lib/access-control";
+import { useAuthStore } from "~/store/useAuthStore";
+import { UserRole } from "~/types/users";
 
 const sortSchema = z.array(z.object({ id: z.string(), desc: z.boolean() }));
 
@@ -35,6 +38,8 @@ const toEnumArray = <T extends string>(
 };
 
 export default function PatientListingPage() {
+  const user = useAuthStore((state) => state.user);
+  const canManagePatients = canAccessRole(user?.role, [UserRole.ADMIN]);
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
   const [pageLimit] = useQueryState("perPage", parseAsInteger.withDefault(10));
   const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
@@ -125,27 +130,33 @@ export default function PatientListingPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
-        <Button onClick={handleDownloadTemplate} variant="outline">
-          <IconDownload className="w-4 h-4" />
-          Descargar Plantilla
-        </Button>
-        <Button onClick={triggerFileInput} variant="outline">
-          <IconUpload className="w-4 h-4" />
-          Cargar Plantilla
-        </Button>
-        <input
-          id="patient-import-input"
-          type="file"
-          accept=".xlsx,.csv"
-          onChange={handleUploadTemplate}
-          style={{ display: "none" }}
-        />
-      </div>
+      {canManagePatients && (
+        <div className="flex gap-2">
+          <Button onClick={handleDownloadTemplate} variant="outline">
+            <IconDownload className="w-4 h-4" />
+            Descargar Plantilla
+          </Button>
+          <Button onClick={triggerFileInput} variant="outline">
+            <IconUpload className="w-4 h-4" />
+            Cargar Plantilla
+          </Button>
+          <input
+            id="patient-import-input"
+            type="file"
+            accept=".xlsx,.csv"
+            onChange={handleUploadTemplate}
+            style={{ display: "none" }}
+          />
+        </div>
+      )}
       <PatientTable
         data={patients}
         totalItems={totalItems}
-        columns={columns}
+        columns={
+          canManagePatients
+            ? columns
+            : columns.filter((column) => column.id !== "actions")
+        }
         isFetching={isFetching}
         globalSearch={search}
         onGlobalSearchChange={debouncedSetSearch}
