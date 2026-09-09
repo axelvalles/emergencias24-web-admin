@@ -19,6 +19,7 @@ import {
   IconArrowsExchange,
 } from "@tabler/icons-react";
 import { format, formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
 import { cn } from "~/lib/utils";
 
 interface TicketHistoryTimelineProps {
@@ -182,12 +183,13 @@ export default function TicketHistoryTimeline({
                     >
                       {isStatusEvent
                         ? TicketStatusLabels[entry.status]
-                        : "Handoff"}
+                        : "Cambio de responsable"}
                     </Badge>
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                       <IconClock className="h-3 w-3" />
                       {formatDistanceToNow(new Date(entry.createdAt), {
                         addSuffix: true,
+                        locale: es,
                       })}
                     </span>
                     <span className="text-xs text-muted-foreground">
