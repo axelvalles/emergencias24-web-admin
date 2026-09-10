@@ -7,6 +7,10 @@ import type {
 import { httpClient } from "./client";
 import axios from "axios";
 import { useAuthStore } from "~/store/useAuthStore";
+import {
+  createPatientImportFormData,
+  type PatientImportContext,
+} from "~/lib/patient-import";
 
 // API Response types
 
@@ -93,18 +97,19 @@ export const patientApi = {
   },
 
   // Upload import file
-  uploadPatients: async (file: File): Promise<true> => {
+  uploadPatients: async (
+    file: File,
+    context: PatientImportContext
+  ): Promise<true> => {
     const token = useAuthStore.getState().token;
     const API_BASE_URL =
       import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-    const formData = new FormData();
-    formData.append("file", file);
+    const formData = createPatientImportFormData(file, context);
 
     return axios.post(`${API_BASE_URL}/patients/import`, formData, {
       headers: {
         Authorization: token ? `Bearer ${token}` : undefined,
-        "Content-Type": "multipart/form-data",
       },
     });
   },

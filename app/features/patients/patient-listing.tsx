@@ -5,7 +5,7 @@ import { PatientTable } from "./patient-tables";
 import { columns } from "./patient-tables/columns";
 import { DataTableSkeleton } from "~/components/ui/table/data-table-skeleton";
 import { Button } from "~/components/ui/button";
-import { IconDownload, IconUpload } from "@tabler/icons-react";
+import { IconDownload } from "@tabler/icons-react";
 import {
   parseAsInteger,
   parseAsString,
@@ -19,6 +19,7 @@ import { useDebouncedCallback } from "~/hooks/use-debounced-callback";
 import { canAccessRole } from "~/lib/access-control";
 import { useAuthStore } from "~/store/useAuthStore";
 import { UserRole } from "~/types/users";
+import { PatientImportDialog } from "./patient-import-dialog";
 
 const sortSchema = z.array(z.object({ id: z.string(), desc: z.boolean() }));
 
@@ -89,45 +90,6 @@ export default function PatientListingPage() {
     }
   };
 
-  const handleUploadTemplate = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    const allowedTypes = [
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
-      "text/csv",
-    ];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error("Solo se permiten archivos .xlsx o .csv");
-      return;
-    }
-
-    // Validate file size (50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error("El archivo no puede superar los 50MB");
-      return;
-    }
-
-    try {
-      await patientApi.uploadPatients(file);
-      toast.success("Pacientes importados exitosamente");
-      // Optionally refresh the list
-      refetch();
-    } catch (error) {
-      toast.error("Error al importar pacientes");
-    }
-  };
-
-  const triggerFileInput = () => {
-    const input = document.getElementById(
-      "patient-import-input"
-    ) as HTMLInputElement;
-    input?.click();
-  };
-
   return (
     <div className="space-y-4">
       {canManagePatients && (
@@ -136,16 +98,10 @@ export default function PatientListingPage() {
             <IconDownload className="w-4 h-4" />
             Descargar Plantilla
           </Button>
-          <Button onClick={triggerFileInput} variant="outline">
-            <IconUpload className="w-4 h-4" />
-            Cargar Plantilla
-          </Button>
-          <input
-            id="patient-import-input"
-            type="file"
-            accept=".xlsx,.csv"
-            onChange={handleUploadTemplate}
-            style={{ display: "none" }}
+          <PatientImportDialog
+            onImported={async () => {
+              await refetch();
+            }}
           />
         </div>
       )}
