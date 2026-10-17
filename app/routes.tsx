@@ -47,6 +47,10 @@ export default [
       route("/editar/:id", "./routes/_auth/plan-subscriptions/edit.tsx"),
     ]),
 
+    ...prefix("contratos-plan", [
+      route("nuevo", "./routes/_auth/plan-contracts/new.tsx"),
+    ]),
+
     ...prefix("empresas", [
       index("./routes/_auth/companies/companies.tsx"),
       route("nueva", "./routes/_auth/companies/new.tsx"),

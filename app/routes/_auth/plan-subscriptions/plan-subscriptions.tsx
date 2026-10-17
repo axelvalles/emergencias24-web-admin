@@ -24,12 +24,20 @@ export default function PlanSubscriptionsPage() {
             description="Administra las suscripciones de planes."
           />
           {canManageSubscriptions && (
-            <Link
-              to="/suscripciones/nueva"
-              className={cn(buttonVariants(), "text-xs md:text-sm")}
-            >
-              <IconPlus className="mr-2 h-4 w-4" /> Nueva suscripción
-            </Link>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                to="/contratos-plan/nuevo"
+                className={cn(buttonVariants({ variant: "outline" }), "text-xs md:text-sm")}
+              >
+                Nuevo contrato de paquete
+              </Link>
+              <Link
+                to="/suscripciones/nueva"
+                className={cn(buttonVariants(), "text-xs md:text-sm")}
+              >
+                <IconPlus className="mr-2 h-4 w-4" /> Nueva suscripción
+              </Link>
+            </div>
           )}
         </div>
         <Separator />
