@@ -74,6 +74,7 @@ export interface Plan {
   planBenefits?: PlanBenefit[];
   status: PlanStatus;
   monthlyCost?: number | null;
+  beneficiaryCapacity?: number | null;
   activeSubscriptionsCount?: number;
   benefitsCount?: number;
   createdAt: string;
